@@ -1,0 +1,615 @@
+cabal-version: 1.12
+
+name:           advent-of-code2018
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/cdepillabout/advent-of-code2018#readme>
+homepage:       https://github.com/cdepillabout/advent-of-code2018#readme
+bug-reports:    https://github.com/cdepillabout/advent-of-code2018/issues
+author:         Dennis Gosnell
+maintainer:     cdep.illabout@gmail.com
+copyright:      Copyright (c) 2018 Dennis Gosnell
+license:        BSD3
+license-file:   LICENSE
+build-type:     Custom
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+-- This custom setup is so that the doctests can be easily run.
+custom-setup
+  setup-depends:     base
+                   , Cabal
+                   , cabal-doctest >=1.0.2 && <1.1
+
+source-repository head
+  type: git
+  location: https://github.com/cdepillabout/advent-of-code2018
+
+-- This is a library that can hold common code.  You may want to put any common
+-- code that you share between solutions here.  Although since this basically a
+-- programming competition, it may just be easier to copy and paste functions
+-- you need in more than one module.
+-- library
+--   -- You can add your own modules here.
+--   exposed-modules:    Lib
+--                     , MyLens
+--   hs-source-dirs:     src
+--   -- Commonly used libraries.
+--   --
+--   -- Add any library dependencies you might need here.
+--   build-depends:      base >=4.11 && <5
+--                     , aeson
+--                     , attoparsec
+--                     , bytestring
+--                     , conduit
+--                     , conduit-extra
+--                     , containers
+--                     , contravariant
+--                     , lens
+--                     , megaparsec
+--                     , mtl
+--                     , pretty-simple
+--                     , text
+--                     , unordered-containers
+--   ghc-options:        -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -Wno-unused-imports -Wno-unused-top-binds
+--   -- Commonly used language extensions.
+--   --
+--   -- Add language extensions you want to use here so it doesn't clutter the top
+--   -- of your Haskell files.
+--   default-extensions: AutoDeriveTypeable
+--                       BangPatterns
+--                       BinaryLiterals
+--                       ConstraintKinds
+--                       DataKinds
+--                       DefaultSignatures
+--                       DeriveDataTypeable
+--                       DeriveFoldable
+--                       DeriveFunctor
+--                       DeriveGeneric
+--                       DeriveTraversable
+--                       DoAndIfThenElse
+--                       EmptyCase
+--                       EmptyDataDecls
+--                       ExistentialQuantification
+--                       ExplicitNamespaces
+--                       FlexibleContexts
+--                       FlexibleInstances
+--                       FunctionalDependencies
+--                       GADTs
+--                       GeneralizedNewtypeDeriving
+--                       InstanceSigs
+--                       KindSignatures
+--                       LambdaCase
+--                       MultiParamTypeClasses
+--                       MultiWayIf
+--                       NamedFieldPuns
+--                       OverloadedStrings
+--                       PartialTypeSignatures
+--                       PatternGuards
+--                       PolyKinds
+--                       RankNTypes
+--                       RecordWildCards
+--                       ScopedTypeVariables
+--                       StandaloneDeriving
+--                       TupleSections
+--                       TypeFamilies
+--                       TypeSynonymInstances
+--                       ViewPatterns
+--   default-language: Haskell2010
+
+-- This is an example of a Haskell executable that you can use to solve one of
+-- the Advent of Code problems.
+--
+-- This template should be reusable for each of the days.  Just copy and paste
+-- this executable block.  Don't forget to change the executable name and main-is
+-- file name.
+--
+-- You can compile the executable with the following command:
+--
+-- $ stack build --fast advent-of-code2018:day01
+--
+-- (Or just `stack build`.)
+--
+-- You can run the executable like the following:
+--
+-- $ stack exec -- day01
+-- executable day01
+--   main-is:          Day01.hs
+--   hs-source-dirs:   app
+--   -- Commonly used libraries.
+--   --
+--   -- Add any library dependencies you might need here.
+--   build-depends:      advent-of-code2018
+--                     , base >=4.11 && <5
+--                     , aeson
+--                     , attoparsec
+--                     , bytestring
+--                     , conduit
+--                     , conduit-extra
+--                     , containers
+--                     , lens
+--                     , megaparsec
+--                     , pretty-simple
+--                     , text
+--                     , unordered-containers
+--   ghc-options:        -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -Wno-unused-imports -Wno-unused-top-binds
+--   -- Commonly used language extensions.
+--   --
+--   -- Add language extensions you want to use here so it doesn't clutter the top
+--   -- of your Haskell files.
+--   default-extensions: AutoDeriveTypeable
+--                       BangPatterns
+--                       BinaryLiterals
+--                       ConstraintKinds
+--                       DataKinds
+--                       DefaultSignatures
+--                       DeriveDataTypeable
+--                       DeriveFoldable
+--                       DeriveFunctor
+--                       DeriveGeneric
+--                       DeriveTraversable
+--                       DoAndIfThenElse
+--                       EmptyCase
+--                       EmptyDataDecls
+--                       ExistentialQuantification
+--                       ExplicitNamespaces
+--                       FlexibleContexts
+--                       FlexibleInstances
+--                       FunctionalDependencies
+--                       GADTs
+--                       GeneralizedNewtypeDeriving
+--                       InstanceSigs
+--                       KindSignatures
+--                       LambdaCase
+--                       MultiParamTypeClasses
+--                       MultiWayIf
+--                       NamedFieldPuns
+--                       OverloadedStrings
+--                       PartialTypeSignatures
+--                       PatternGuards
+--                       PolyKinds
+--                       RankNTypes
+--                       RecordWildCards
+--                       ScopedTypeVariables
+--                       StandaloneDeriving
+--                       TupleSections
+--                       TypeFamilies
+--                       TypeSynonymInstances
+--                       ViewPatterns
+--   default-language: Haskell2010
+
+-- executable day02
+--   main-is:          Day02.hs
+--   hs-source-dirs:   app
+--   -- Commonly used libraries.
+--   --
+--   -- Add any library dependencies you might need here.
+--   build-depends:      advent-of-code2018
+--                     , base >=4.11 && <5
+--                     , aeson
+--                     , attoparsec
+--                     , bytestring
+--                     , conduit
+--                     , conduit-extra
+--                     , containers
+--                     , lens
+--                     , megaparsec
+--                     , pretty-simple
+--                     , text
+--                     , unordered-containers
+--   ghc-options:        -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -Wno-unused-imports -Wno-unused-top-binds
+--   -- Commonly used language extensions.
+--   --
+--   -- Add language extensions you want to use here so it doesn't clutter the top
+--   -- of your Haskell files.
+--   default-extensions: AutoDeriveTypeable
+--                       BangPatterns
+--                       BinaryLiterals
+--                       ConstraintKinds
+--                       DataKinds
+--                       DefaultSignatures
+--                       DeriveDataTypeable
+--                       DeriveFoldable
+--                       DeriveFunctor
+--                       DeriveGeneric
+--                       DeriveTraversable
+--                       DoAndIfThenElse
+--                       EmptyCase
+--                       EmptyDataDecls
+--                       ExistentialQuantification
+--                       ExplicitNamespaces
+--                       FlexibleContexts
+--                       FlexibleInstances
+--                       FunctionalDependencies
+--                       GADTs
+--                       GeneralizedNewtypeDeriving
+--                       InstanceSigs
+--                       KindSignatures
+--                       LambdaCase
+--                       MultiParamTypeClasses
+--                       MultiWayIf
+--                       NamedFieldPuns
+--                       OverloadedStrings
+--                       PartialTypeSignatures
+--                       PatternGuards
+--                       PolyKinds
+--                       RankNTypes
+--                       RecordWildCards
+--                       ScopedTypeVariables
+--                       StandaloneDeriving
+--                       TupleSections
+--                       TypeFamilies
+--                       TypeSynonymInstances
+--                       ViewPatterns
+--   default-language: Haskell2010
+
+-- executable day03
+--   main-is:          Day03.hs
+--   hs-source-dirs:   app
+--   -- Commonly used libraries.
+--   --
+--   -- Add any library dependencies you might need here.
+--   build-depends:      advent-of-code2018
+--                     , base >=4.11 && <5
+--                     , aeson
+--                     , attoparsec
+--                     , bytestring
+--                     , conduit
+--                     , conduit-extra
+--                     , containers
+--                     , lens
+--                     , megaparsec
+--                     , pretty-simple
+--                     , text
+--                     , unordered-containers
+--                     , vector
+--   ghc-options:        -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -Wno-unused-imports -Wno-unused-top-binds
+--   -- Commonly used language extensions.
+--   --
+--   -- Add language extensions you want to use here so it doesn't clutter the top
+--   -- of your Haskell files.
+--   default-extensions: AutoDeriveTypeable
+--                       BangPatterns
+--                       BinaryLiterals
+--                       ConstraintKinds
+--                       DataKinds
+--                       DefaultSignatures
+--                       DeriveDataTypeable
+--                       DeriveFoldable
+--                       DeriveFunctor
+--                       DeriveGeneric
+--                       DeriveTraversable
+--                       DoAndIfThenElse
+--                       EmptyCase
+--                       EmptyDataDecls
+--                       ExistentialQuantification
+--                       ExplicitNamespaces
+--                       FlexibleContexts
+--                       FlexibleInstances
+--                       FunctionalDependencies
+--                       GADTs
+--                       GeneralizedNewtypeDeriving
+--                       InstanceSigs
+--                       KindSignatures
+--                       LambdaCase
+--                       MultiParamTypeClasses
+--                       MultiWayIf
+--                       NamedFieldPuns
+--                       OverloadedStrings
+--                       PartialTypeSignatures
+--                       PatternGuards
+--                       PolyKinds
+--                       RankNTypes
+--                       RecordWildCards
+--                       ScopedTypeVariables
+--                       StandaloneDeriving
+--                       TupleSections
+--                       TypeFamilies
+--                       TypeSynonymInstances
+--                       ViewPatterns
+--   default-language: Haskell2010
+
+-- executable day04
+--   main-is:          Day04.hs
+--   hs-source-dirs:   app
+--   -- Commonly used libraries.
+--   --
+--   -- Add any library dependencies you might need here.
+--   build-depends:      advent-of-code2018
+--                     , base >=4.11 && <5
+--                     , aeson
+--                     , attoparsec
+--                     , bytestring
+--                     , conduit
+--                     , conduit-extra
+--                     , containers
+--                     , lens
+--                     , megaparsec
+--                     , parsec
+--                     , pretty-simple
+--                     , text
+--                     , time
+--                     , unordered-containers
+--                     , vector
+--   ghc-options:        -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -Wno-unused-imports -Wno-unused-top-binds
+--   -- Commonly used language extensions.
+--   --
+--   -- Add language extensions you want to use here so it doesn't clutter the top
+--   -- of your Haskell files.
+--   default-extensions: AutoDeriveTypeable
+--                       BangPatterns
+--                       BinaryLiterals
+--                       ConstraintKinds
+--                       DataKinds
+--                       DefaultSignatures
+--                       DeriveDataTypeable
+--                       DeriveFoldable
+--                       DeriveFunctor
+--                       DeriveGeneric
+--                       DeriveTraversable
+--                       DoAndIfThenElse
+--                       EmptyCase
+--                       EmptyDataDecls
+--                       ExistentialQuantification
+--                       ExplicitNamespaces
+--                       FlexibleContexts
+--                       FlexibleInstances
+--                       FunctionalDependencies
+--                       GADTs
+--                       GeneralizedNewtypeDeriving
+--                       InstanceSigs
+--                       KindSignatures
+--                       LambdaCase
+--                       MultiParamTypeClasses
+--                       MultiWayIf
+--                       NamedFieldPuns
+--                       OverloadedStrings
+--                       PartialTypeSignatures
+--                       PatternGuards
+--                       PolyKinds
+--                       RankNTypes
+--                       RecordWildCards
+--                       ScopedTypeVariables
+--                       StandaloneDeriving
+--                       TupleSections
+--                       TypeFamilies
+--                       TypeSynonymInstances
+--                       ViewPatterns
+--   default-language: Haskell2010
+
+-- executable day08
+--   main-is:          Day08.hs
+--   hs-source-dirs:   app
+--   -- Commonly used libraries.
+--   --
+--   -- Add any library dependencies you might need here.
+--   build-depends:      advent-of-code2018
+--                     , base >=4.11 && <5
+--                     , aeson
+--                     , attoparsec
+--                     , bytestring
+--                     , conduit
+--                     , conduit-extra
+--                     , containers
+--                     , classy-prelude
+--                     , lens
+--                     , megaparsec
+--                     , parsec
+--                     , pretty-simple
+--                     , text
+--                     , time
+--                     , unordered-containers
+--                     , vector
+--   ghc-options:        -threaded -rtsopts -with-rtsopts=-N -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -Wno-unused-imports -Wno-unused-top-binds
+--   -- Commonly used language extensions.
+--   --
+--   -- Add language extensions you want to use here so it doesn't clutter the top
+--   -- of your Haskell files.
+--   default-extensions: AutoDeriveTypeable
+--                       BangPatterns
+--                       BinaryLiterals
+--                       ConstraintKinds
+--                       DataKinds
+--                       DefaultSignatures
+--                       DeriveDataTypeable
+--                       DeriveFoldable
+--                       DeriveFunctor
+--                       DeriveGeneric
+--                       DeriveTraversable
+--                       DoAndIfThenElse
+--                       EmptyCase
+--                       EmptyDataDecls
+--                       ExistentialQuantification
+--                       ExplicitNamespaces
+--                       FlexibleContexts
+--                       FlexibleInstances
+--                       FunctionalDependencies
+--                       GADTs
+--                       GeneralizedNewtypeDeriving
+--                       InstanceSigs
+--                       KindSignatures
+--                       LambdaCase
+--                       MultiParamTypeClasses
+--                       MultiWayIf
+--                       NamedFieldPuns
+--                       NoImplicitPrelude
+--                       OverloadedStrings
+--                       PartialTypeSignatures
+--                       PatternGuards
+--                       PolyKinds
+--                       RankNTypes
+--                       RecordWildCards
+--                       ScopedTypeVariables
+--                       StandaloneDeriving
+--                       TupleSections
+--                       TypeFamilies
+--                       TypeSynonymInstances
+--                       ViewPatterns
+--   default-language: Haskell2010
+
+-- executable day09
+--   main-is:          Day09.hs
+--   hs-source-dirs:   app
+--   -- Commonly used libraries.
+--   --
+--   -- Add any library dependencies you might need here.
+--   build-depends:      base >=4.11 && <5
+--                     , aeson
+--                     , attoparsec
+--                     , bytestring
+--                     , conduit
+--                     , conduit-extra
+--                     , containers
+--                     , classy-prelude
+--                     , lens
+--                     , megaparsec
+--                     , parsec
+--                     , pretty-simple
+--                     , text
+--                     , time
+--                     , unordered-containers
+--                     , vector
+--   ghc-options:        -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -Wno-unused-imports -Wno-unused-top-binds -O2
+--   -- Commonly used language extensions.
+--   --
+--   -- Add language extensions you want to use here so it doesn't clutter the top
+--   -- of your Haskell files.
+--   default-extensions: AutoDeriveTypeable
+--                       BangPatterns
+--                       BinaryLiterals
+--                       ConstraintKinds
+--                       DataKinds
+--                       DefaultSignatures
+--                       DeriveDataTypeable
+--                       DeriveFoldable
+--                       DeriveFunctor
+--                       DeriveGeneric
+--                       DeriveTraversable
+--                       DoAndIfThenElse
+--                       EmptyCase
+--                       EmptyDataDecls
+--                       ExistentialQuantification
+--                       ExplicitNamespaces
+--                       FlexibleContexts
+--                       FlexibleInstances
+--                       FunctionalDependencies
+--                       GADTs
+--                       GeneralizedNewtypeDeriving
+--                       InstanceSigs
+--                       KindSignatures
+--                       LambdaCase
+--                       MultiParamTypeClasses
+--                       MultiWayIf
+--                       NamedFieldPuns
+--                       NoImplicitPrelude
+--                       OverloadedStrings
+--                       PartialTypeSignatures
+--                       PatternGuards
+--                       PolyKinds
+--                       RankNTypes
+--                       RecordWildCards
+--                       ScopedTypeVariables
+--                       StandaloneDeriving
+--                       TupleSections
+--                       TypeFamilies
+--                       TypeSynonymInstances
+--                       ViewPatterns
+--   default-language: Haskell2010
+
+executable day11
+  main-is:          Day11.hs
+  hs-source-dirs:   app
+  -- Commonly used libraries.
+  --
+  -- Add any library dependencies you might need here.
+  build-depends:      base >=4.11 && <5
+                    -- , aeson
+                    -- , attoparsec
+                    -- , bytestring
+                    -- , conduit
+                    -- , conduit-extra
+                    -- , containers
+                    , classy-prelude
+                    -- , lens
+                    -- , megaparsec
+                    -- , parsec
+                    -- , pretty-simple
+                    -- , text
+                    -- , time
+                    -- , unordered-containers
+                    -- , vector
+  ghc-options:        -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -Wno-unused-imports -Wno-unused-top-binds -O2
+  -- Commonly used language extensions.
+  --
+  -- Add language extensions you want to use here so it doesn't clutter the top
+  -- of your Haskell files.
+  default-extensions: AutoDeriveTypeable
+                      BangPatterns
+                      BinaryLiterals
+                      BlockArguments
+                      ConstraintKinds
+                      DataKinds
+                      DefaultSignatures
+                      DeriveDataTypeable
+                      DeriveFoldable
+                      DeriveFunctor
+                      DeriveGeneric
+                      DeriveTraversable
+                      DoAndIfThenElse
+                      EmptyCase
+                      EmptyDataDecls
+                      ExistentialQuantification
+                      ExplicitNamespaces
+                      FlexibleContexts
+                      FlexibleInstances
+                      FunctionalDependencies
+                      GADTs
+                      GeneralizedNewtypeDeriving
+                      InstanceSigs
+                      KindSignatures
+                      LambdaCase
+                      MultiParamTypeClasses
+                      MultiWayIf
+                      NamedFieldPuns
+                      NoImplicitPrelude
+                      OverloadedStrings
+                      PartialTypeSignatures
+                      PatternGuards
+                      PolyKinds
+                      RankNTypes
+                      RecordWildCards
+                      ScopedTypeVariables
+                      StandaloneDeriving
+                      TupleSections
+                      TypeFamilies
+                      TypeSynonymInstances
+                      ViewPatterns
+  default-language: Haskell2010
+
+-- This is a test suite that will run doctests on your code.  This is really
+-- nice when you want to write a small test inline to make sure your code is
+-- working.  It is lighter weight than pulling in a whole testing framework,
+-- but I still find it very helpful for these types of programming contests.
+--
+-- There are examples of writing doctests in both the library and executable.
+--
+-- You can run the doctests with the following command:
+--
+-- $ stack test --fast
+test-suite doctests
+  -- This lists the executables for which doctest will be run.  Normally you
+  -- only need to list the executable you are currently working on, since you
+  -- don't need the doctests to be run for all your already solved exercises.
+  --
+  -- So when you finish the solution for day 1 and start working on day 2, you
+  -- will replace `exe:day01` with `exe:day02`.
+  x-doctest-components: lib exe:day11
+  type:                exitcode-stdio-1.0
+  main-is:             DocTest.hs
+  hs-source-dirs:      test
+  build-depends:       base
+                     , doctest
+                     , QuickCheck
+                     , template-haskell
+  default-language:    Haskell2010
+  ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
