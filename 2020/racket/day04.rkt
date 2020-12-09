@@ -1,5 +1,11 @@
 
-#lang racket
+#lang racket/base
+(require racket/contract)
+(require racket/function)
+(require racket/list)
+(require racket/port)
+(require racket/set)
+(require racket/string)
 
 (module+ test
   (require rackunit)
@@ -7,7 +13,8 @@
 
 (define required-names-set (set "byr" "iyr" "eyr" "hgt" "hcl" "ecl" "pid"))
 
-(define (validate-num str min max)
+(define/contract (validate-num str min max)
+  (-> string? number? number? boolean?)
   (let ([num (string->number str)])
     (and num (<= min num max))
     )
@@ -20,20 +27,24 @@
   (check-false (validate-num "151" 50 150))
   )
 
-(define (is-digit? c)
+(define/contract (is-digit? c)
+  (char? . -> . boolean?)
   (char<=? #\0 c #\9))
 
-(define (is-all-digit? chars len)
+(define/contract (is-all-digit? chars len)
+  (-> string? number? boolean?)
   (and
    (andmap is-digit? (string->list chars))
    (equal? len (length (string->list chars)))
    )
   )
 
-(define (is-hex? c)
+(define/contract (is-hex? c)
+  (-> char? boolean?)
   (or (is-digit? c) (char<=? #\a c #\f)))
 
-(define (is-all-hex? chars len)
+(define/contract (is-all-hex? chars len)
+  (-> string? number? boolean?)
   (and
    (andmap is-hex? (string->list chars))
    (equal? len (length (string->list chars)))
@@ -41,13 +52,19 @@
   )
 
 ;; byr (Birth Year) - four digits; at least 1920 and at most 2002.
-(define (validate-byr val) (validate-num val 1920 2002))
+(define/contract (validate-byr val)
+  (-> string? boolean?)
+  (validate-num val 1920 2002))
 
 ;; iyr (Issue Year) - four digits; at least 2010 and at most 2020.
-(define (validate-iyr val) (validate-num val 2010 2020))
+(define/contract (validate-iyr val)
+  (-> string? boolean?)
+  (validate-num val 2010 2020))
 
 ;; eyr (Expiration Year) - four digits; at least 2020 and at most 2030.
-(define (validate-eyr val) (validate-num val 2020 2030))
+(define/contract (validate-eyr val)
+  (-> string? boolean?)
+  (validate-num val 2020 2030))
 
 ;; hgt (Height) - a number followed by either cm or in:
 (define (validate-hgt val)
@@ -108,8 +125,6 @@
      (validate-vals names-vals)
      )
   ))
-
-(define my-test '())
 
 (define (is-valid pass)
   (let* ([fields (string-split pass)]
