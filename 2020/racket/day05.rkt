@@ -42,6 +42,16 @@
   ;; (check-equal? (calc-next-col 3 5 0) 3)
   )
 
+(define/contract (get-missing-seat-ids seat-ids max-seat-ids)
+  (-> (listof number?) number? (listof number?))
+  (let ([sorted-seat-ids (list->set (sort seat-ids <))]
+        [all-range (list->set (range 0 max-seat-ids))]
+        )
+    (sort (set->list (set-subtract all-range sorted-seat-ids)) <)
+    )
+  )
+
+
 
 (define (main)
   (let* (
@@ -51,6 +61,7 @@
          [split-input (string-split input-str "\n")]
          [seat-ids (map get-seat-id split-input)]
          [max-seat-id (argmax identity seat-ids)]
+         [missing-seat-ids (get-missing-seat-ids seat-ids max-seat-id)]
          )
     ;; (printf "input-str: ~v\n" input-str)
     ;; (printf "split-input: ~v\n" split-input)
@@ -58,6 +69,7 @@
     ;; (printf "number-collisions: ~v\n" number-collisions)
     ;; (printf "collisions-for-pattern: ~v\n" collisions-for-pattern)
     (printf "max-seat-id: ~v\n" max-seat-id)
+    (printf "missing-seat-ids: ~v\n" missing-seat-ids)
     '()
     )
   )
