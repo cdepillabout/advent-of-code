@@ -5,14 +5,14 @@
   (require rackunit)
   )
 
-(define/contract (calc-next-col max-cols curr-col)
-  (-> number? number? number?)
-  (modulo (+ curr-col 3) max-cols)
+(define/contract (calc-next-col right-amount max-cols curr-col)
+  (-> number? number? number? number?)
+  (modulo (+ curr-col right-amount) max-cols)
   )
 
 (module+ test
-  (check-equal? (calc-next-col 5 3) 1)
-  (check-equal? (calc-next-col 5 0) 3)
+  (check-equal? (calc-next-col 3 5 3) 1)
+  (check-equal? (calc-next-col 3 5 0) 3)
   )
 
 (define/contract (is-tree-here? tree-line-lists curr-row curr-col)
@@ -26,32 +26,34 @@
                              1 2))
   )
 
-(define/contract (count-trees-loop tree-line-lists max-rows max-cols curr-row curr-col num-trees-accum)
-  (-> (listof (listof boolean?)) number? number? number? number? number? number?)
+(define/contract (count-trees-loop tree-line-lists max-rows max-cols curr-row curr-col right-amount down-amount num-trees-accum)
+  (-> (listof (listof boolean?)) number? number? number? number? number? number? number? number?)
   (when (>= curr-col max-cols) (error "violation curr-col greater than max-cols in count-trees-loop"))
-  (if (eq? curr-row max-rows)
+  (if (>= curr-row max-rows)
       num-trees-accum
       (let ([is-tree-here (is-tree-here? tree-line-lists curr-row curr-col)]
-            [next-col (calc-next-col max-cols curr-col)]
+            [next-col (calc-next-col right-amount max-cols curr-col)]
             )
         (count-trees-loop tree-line-lists
                           max-rows
                           max-cols
-                          (+ 1 curr-row)
+                          (+ down-amount curr-row)
                           next-col
+                          right-amount
+                          down-amount
                           (if is-tree-here (+ 1 num-trees-accum) num-trees-accum)
                           )
         )
       )
   )
 
-(define/contract (count-trees tree-line-lists)
-  (-> (listof (listof boolean?)) number?)
+(define/contract (count-trees tree-line-lists right-amount down-amount)
+  (-> (listof (listof boolean?)) number? number? number?)
   (let ([max-rows (length tree-line-lists)]
         [max-cols (length (car tree-line-lists))]
         )
     ;; (printf "num-rows: ~v, num-cols: ~v\n" num-rows num-cols)
-    (count-trees-loop tree-line-lists max-rows max-cols 0 0 0)
+    (count-trees-loop tree-line-lists max-rows max-cols 0 0 right-amount down-amount 0)
     )
   )
 
@@ -71,6 +73,8 @@
   ;; (check-false (is-valid "1-3 b: cdefg") "1-3 b: cdefg")
   )
 
+
+
 (define (main)
   (let* (
          [in (open-input-file "day03-input")]
@@ -78,12 +82,16 @@
          [input-str (port->string in #:close? #t)]
          [split-input (string-split input-str "\n")]
          [tree-line-lists (map to-tree-line split-input)]
-         [number-collisions (count-trees tree-line-lists)]
+         [patterns '((1 1) (3 1) (5 1) (7 1) (1 2))]
+         [collisions-for-pattern
+          (map (curry apply count-trees tree-line-lists) patterns)]
+         [number-collisions (apply * collisions-for-pattern)]
          )
     ;; (printf "input-str: ~v\n" input-str)
     ;; (printf "split-input: ~v\n" split-input)
     ;; (printf "tree-line-lists: ~v\n" tree-line-lists)
     (printf "number-collisions: ~v\n" number-collisions)
+    (printf "collisions-for-pattern: ~v\n" collisions-for-pattern)
     )
   )
 
