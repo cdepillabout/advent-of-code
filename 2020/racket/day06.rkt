@@ -5,13 +5,28 @@
   )
 
 
+;; (define/contract (calc-group-amount group)
+;;   (-> string? number?)
+;;   (set-count (list->set (string->list (string-replace group "\n" ""))))
+;;   )
+
 (define/contract (calc-group-amount group)
-  (-> string? number?)
-  (set-count (list->set (string->list (string-replace group "\n" ""))))
+  ;; (-> string? number?)
+  (-> string? any/c)
+  (let* ([individuals (string-split group "\n")] ; listof string?
+         ;; listof (setof char?)
+         [individual-sets (map (λ(indiv) (list->set (string->list indiv))) individuals)]
+         ;; setof char?
+         [intersection (apply set-intersect individual-sets)]
+         )
+    (set-count intersection)
+    ;; intersection
+    )
   )
 
+
 (module+ test
-  ;; (check-equal? (calc-next-col 3 5 3) 1)
+  (check-equal? (calc-group-amount "abc") 3)
   ;; (check-equal? (calc-next-col 3 5 0) 3)
   )
 
