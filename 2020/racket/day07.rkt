@@ -21,18 +21,18 @@
   )
 
 (define/contract color/p
-  (parser/c char? (listof string?))
+  (parser/c char? string?)
   (do
       [desc <- single-color/p]
       space/p
       [col <- single-color/p]
-      (pure (list desc col))
+      (pure (string-append desc " " col))
       )
   )
 
 (module+ test
   (check-equal? (parse-string color/p "hello tomorrow")
-                (success (list "hello" "tomorrow")))
+                (success "hello tomorrow"))
   )
 
 (define/contract contained-bag/p
@@ -52,7 +52,7 @@
                  contained-bag/p
                  "1 bright white bag"
                  )
-                (success '(("bright" "white") 1))
+                (success '("bright white" 1))
                 )
   )
 
@@ -71,8 +71,8 @@
                  contained-bags/p
                  "1 bright white bag, 2 muted yellow bags."
                  )
-                (success '((("bright" "white") 1)
-                           (("muted" "yellow") 2)
+                (success '(("bright white" 1)
+                           ("muted yellow" 2)
                            )
                          )
                 )
@@ -99,20 +99,20 @@
                  contains/p
                  "light red bags contain 1 bright white bag, 2 muted yellow bags."
                  )
-                (success '(("light" "red")
-                           ((("bright" "white") 1)
-                            (("muted" "yellow") 2)))))
+                (success '("light red"
+                           (("bright white" 1)
+                            ("muted yellow" 2)))))
   (check-equal? (parse-string
                  contains/p
                  "bright white bags contain 1 shiny gold bag."
                  )
-                (success '(("bright" "white")
-                           ((("shiny" "gold") 1)))))
+                (success '("bright white"
+                           (("shiny gold" 1)))))
   (check-equal? (parse-string
                  contains/p
                  "faded blue bags contain no other bags."
                  )
-                (success '(("faded" "blue") ())))
+                (success '("faded blue" ())))
   )
 
 (define all-input/p
