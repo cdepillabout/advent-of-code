@@ -1,0 +1,29 @@
+digraph G {
+	node0 [label="vibrant plum"];
+	node1 [label="dark orange"];
+	node2 [label="muted yellow"];
+	node3 [label="dotted black"];
+	node4 [label="bright white"];
+	node5 [label="shiny gold"];
+	node6 [label="light red"];
+	node7 [label="dark olive"];
+	node8 [label="faded blue"];
+	subgraph U {
+		edge [dir=none];
+	}
+	subgraph D {
+		node0 -> node5 [label="2"];
+		node2 -> node1 [label="4"];
+		node2 -> node6 [label="2"];
+		node3 -> node0 [label="6"];
+		node3 -> node7 [label="4"];
+		node4 -> node1 [label="3"];
+		node4 -> node6 [label="1"];
+		node5 -> node4 [label="1"];
+		node5 -> node2 [label="2"];
+		node7 -> node5 [label="1"];
+		node8 -> node2 [label="9"];
+		node8 -> node0 [label="5"];
+		node8 -> node7 [label="3"];
+	}
+}
