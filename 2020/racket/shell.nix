@@ -3,5 +3,5 @@
 with import <nixpkgs> {};
 
 mkShell {
-  nativeBuildInputs = [racket];
+  nativeBuildInputs = [racket python3Packages.xdot];
 }
