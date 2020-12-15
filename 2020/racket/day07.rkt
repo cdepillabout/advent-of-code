@@ -36,7 +36,7 @@
   )
 
 (define/contract contained-bag/p
-  (parser/c char? list?)
+  (parser/c char? (list/c string? number?))
   (do
       [num-bags <- integer/p]
       space/p
@@ -56,9 +56,10 @@
                 )
   )
 
+(define contained-bags/c (listof (list/c string? number?)))
 
 (define/contract contained-bags/p
-  (parser/c char? any/c)
+  (parser/c char? contained-bags/c)
   (do [contained <- (or/p (many+/p contained-bag/p #:sep (string/p ", "))
                          (map (const '()) (string/p "no other bags")))]
       (char/p #\.)
@@ -85,7 +86,7 @@
   )
 
 (define/contract contains/p
-  (parser/c char? list?)
+  (parser/c char? (list/c string? contained-bags/c))
   (do
       [color <- color/p]
       (string/p " bags contain ")
