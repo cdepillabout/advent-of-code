@@ -147,13 +147,13 @@
   (let ([contained-color (car contained)]
         [contained-num (cadr contained)]
         )
-    (list (list contained-color container) contained-num)
+    (list (list container contained-color) contained-num)
     )
   )
 
 (module+ test
   (check-equal? (build-graph-one-contained "light red" '("bright white" 1))
-                '(("bright white" "light red") 1))
+                '(("light red" "bright white") 1))
   )
 
 (define/contract (build-graph-input-one-line input)
@@ -168,8 +168,8 @@
 (module+ test
   (check-equal? (build-graph-input-one-line
                  '("light red" (("bright white" 1) ("muted yellow" 2))))
-                '((("bright white" "light red") 1)
-                  (("muted yellow" "light red") 2)))
+                '((("light red" "bright white") 1)
+                  (("light red" "muted yellow") 2)))
   (check-equal? (build-graph-input-one-line
                  '("faded blue" ()))
                 '())
@@ -194,24 +194,67 @@
 ;; '#hash((a . +inf.0) (b . 0) (c . 20) (d . +inf.0) (x . 100) (y . 2100) (z . 1099) (zz . 4099))
 ;; '#hash((a . #f) (b . #f) (c . b) (d . #f) (x . b) (y . x) (z . x) (zz . z))
 
-(define/contract (how-many-can-contain graph search-color)
+(define/contract (how-many-can-contain orig-graph search-color)
   (-> graph? string? any/c)
-  (define-values (all-connections _) (dijkstra graph search-color))
-  ;; (for/list ([(node x) all-connections])
-  ;;   (if (or (infinite? x) (< x 1)) (cons node 'BAD) (cons node x))
-  ;;   )
-  (for/sum ([(node x) all-connections])
-    (if (or (infinite? x) (< x 1)) 0 1)
+  (define-values (num-cons _) (bfs orig-graph search-color))
+  ;; A graph with all the directions flipped
+  (define/contract graph graph? (transpose orig-graph))
+  (define-vertex-property graph sum-total #:init 0)
+
+  (define num-cons-list (hash->list num-cons))
+  (define sorted-num-cons-list (sort num-cons-list > #:key cdr))
+  (define/contract just-nodes-sorted
+    (listof string?)
+    (racket-map car sorted-num-cons-list))
+
+  ;; node is a string and it is the current node we are operating on
+  (for ([node just-nodes-sorted])
+    ;; curr-node-val is the total in this node
+    (define curr-node-val (sum-total node))
+    (define/contract links-here
+      (listof string?)
+      (get-neighbors graph node))
+    (printf "currently working on node ~v, with value ~v, linking to ~v\n" node curr-node-val links-here)
+    ;; link is a string for a node that connects here
+    (for ([link links-here])
+      ;; the weight between these two nodes
+      (define/contract weight number? (edge-weight graph node link))
+      ;; the current total for the link node
+      (define/contract curr-link-val number? (sum-total link))
+      ;; the new total for the link node
+      (define/contract new-link-val number? (+ curr-link-val
+                                              weight
+                                              (* weight curr-node-val)))
+      (printf
+       "    working on ~v, weight ~v, curr val of ~v: ~v, new val: ~v\n"
+       link weight curr-link-val link new-link-val)
+      (sum-total-set! link new-link-val)
+      )
     )
+  (sum-total search-color)
+  )
+
+(define (do-dijkstra graph search-color)
+  (define-values (all-connections xxx) (dijkstra graph search-color))
+  (list all-connections xxx)
+  )
+
+(define (do-my-bfs graph search-color)
+  (define-values (all-connections xxx) (bfs graph search-color))
+  (list all-connections xxx)
   )
 
 (define (main)
   (let* (
          [in (open-input-file "day07-input")]
          ;; [in (open-input-file "day07-input-example")]
+         ;; [in (open-input-file "day07-input-example2")]
+         ;; [in (open-input-file "day07-input-example3")]
          [input-str (port->string in #:close? #t)]
          [input-lines (parse-result! (parse-string all-input/p input-str))]
          [graph (build-graph input-lines)]
+         [graph-stuff-dijkstra (do-dijkstra graph "shiny gold")]
+         [graph-stuff-bfs (do-my-bfs graph "shiny gold")]
          [how-many (how-many-can-contain graph "shiny gold")]
          ;; [group-sum (for/sum ((g group-amount)) g)]
          ;; [seat-ids (map get-seat-id split-input)]
@@ -219,7 +262,9 @@
          ;; [missing-seat-ids (get-missing-seat-ids seat-ids max-seat-id)]
          )
     ;; (printf "input-str: ~v\n" input-str)
-    ;; (printf "input-lines: ~v\n" input-lines)
+    (printf "input-lines: ~v\n" input-lines)
+    (printf "graph-stuff-dijkstra: ~v\n" graph-stuff-dijkstra)
+    (printf "graph-stuff-bfs: ~v\n" graph-stuff-bfs)
     (printf "how-many: ~v\n" how-many)
     (call-with-output-file "day07-graph.dot" #:exists 'replace
       (λ (out-file) (graphviz graph #:output out-file)))
