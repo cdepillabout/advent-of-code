@@ -197,13 +197,18 @@
 (define/contract (how-many-can-contain graph search-color)
   (-> graph? string? any/c)
   (define-values (all-connections _) (dijkstra graph search-color))
-  all-connections
+  ;; (for/list ([(node x) all-connections])
+  ;;   (if (or (infinite? x) (< x 1)) (cons node 'BAD) (cons node x))
+  ;;   )
+  (for/sum ([(node x) all-connections])
+    (if (or (infinite? x) (< x 1)) 0 1)
+    )
   )
 
 (define (main)
   (let* (
-         ;; [in (open-input-file "day07-input")]
-         [in (open-input-file "day07-input-example")]
+         [in (open-input-file "day07-input")]
+         ;; [in (open-input-file "day07-input-example")]
          [input-str (port->string in #:close? #t)]
          [input-lines (parse-result! (parse-string all-input/p input-str))]
          [graph (build-graph input-lines)]
@@ -214,7 +219,7 @@
          ;; [missing-seat-ids (get-missing-seat-ids seat-ids max-seat-id)]
          )
     ;; (printf "input-str: ~v\n" input-str)
-    (printf "input-lines: ~v\n" input-lines)
+    ;; (printf "input-lines: ~v\n" input-lines)
     (printf "how-many: ~v\n" how-many)
     (call-with-output-file "day07-graph.dot" #:exists 'replace
       (λ (out-file) (graphviz graph #:output out-file)))
