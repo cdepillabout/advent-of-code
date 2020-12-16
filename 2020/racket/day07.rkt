@@ -190,13 +190,8 @@
     )
   )
 
-;; (dijkstra (directed-graph '((a b) (b c) (b x) (x z) (x y) (z zz) (y zz) (d c)) '(10 20 100 999 2000 3000 9999 30)) 'b)
-;; '#hash((a . +inf.0) (b . 0) (c . 20) (d . +inf.0) (x . 100) (y . 2100) (z . 1099) (zz . 4099))
-;; '#hash((a . #f) (b . #f) (c . b) (d . #f) (x . b) (y . x) (z . x) (zz . z))
-
 (define/contract (how-many-can-contain orig-graph search-color)
   (-> graph? string? any/c)
-
   ;; Remove nodes from the graph that don't have a correct connection
   ;; to the search-color.
   (define-values (num-cons _) (bfs orig-graph search-color))
@@ -204,19 +199,17 @@
     (when (infinite? num)
       (remove-vertex! orig-graph node)))
 
-  ;; (define-values (filtered-num-cons __) (bfs orig-graph search-color))
-  ;; (define-values (filtered-num-blahblah xxx yyy) (dfs orig-graph))
-  ;; (define sss (tsort orig-graph))
-
-  ;; (printf "filtered-num-blahblahblah: ~v\n" filtered-num-blahblah)
-  ;; (printf "xxx: ~v\n" xxx)
-  ;; (printf "yyy: ~v\n" yyy)
-  ;; (printf "sss: ~v\n" sss)
-
-  ;; A graph with all the directions flipped
+  ;; A graph with all the directions flipped.  We flip the directions
+  ;; here to be able to find which nodes this node points to in the
+  ;; loop below.
   (define/contract graph graph? (transpose orig-graph))
+
+  ;; Here is a property to track for each node.  This is the total of
+  ;; all the nodes linking to it.
   (define-vertex-property graph sum-total #:init 0)
 
+  ;; Topological sorting of nodes.  This is the order we have to go
+  ;; through and look at each node.
   (define just-nodes-sorted (tsort graph))
 
   (printf "just-nodes-sortted: ~v\n" just-nodes-sorted)
@@ -260,14 +253,15 @@
 
 (define (main)
   (let* (
-         ;; [in (open-input-file "day07-input")]
-         [in (open-input-file "day07-input-example")]
+         [in (open-input-file "day07-input")]
+         ;; [in (open-input-file "day07-input-example")]
          ;; [in (open-input-file "day07-input-example2")]
          ;; [in (open-input-file "day07-input-example3")]
          [input-str (port->string in #:close? #t)]
          [input-lines (parse-result! (parse-string all-input/p input-str))]
          [graph (build-graph input-lines)]
-         [color "muted yellow"]
+         ;; [color "muted yellow"]
+         [color "shiny gold"]
          [graph-stuff-dijkstra (do-dijkstra graph color)]
          [graph-stuff-bfs (do-my-bfs graph color)]
          [how-many (how-many-can-contain graph color)]
