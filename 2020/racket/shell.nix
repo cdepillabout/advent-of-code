@@ -3,5 +3,12 @@
 with import <nixpkgs> {};
 
 mkShell {
-  nativeBuildInputs = [racket python3Packages.xdot];
+  nativeBuildInputs = [
+    racket
+
+    # For visualizing graphs.
+    python3Packages.xdot
+    # xdot needs gtk icons.
+    gnome3.adwaita-icon-theme
+  ];
 }

@@ -196,16 +196,30 @@
 
 (define/contract (how-many-can-contain orig-graph search-color)
   (-> graph? string? any/c)
+
+  ;; Remove nodes from the graph that don't have a correct connection
+  ;; to the search-color.
   (define-values (num-cons _) (bfs orig-graph search-color))
+  (for ([(node num) num-cons])
+    (when (infinite? num)
+      (remove-vertex! orig-graph node)))
+
+  ;; (define-values (filtered-num-cons __) (bfs orig-graph search-color))
+  ;; (define-values (filtered-num-blahblah xxx yyy) (dfs orig-graph))
+  ;; (define sss (tsort orig-graph))
+
+  ;; (printf "filtered-num-blahblahblah: ~v\n" filtered-num-blahblah)
+  ;; (printf "xxx: ~v\n" xxx)
+  ;; (printf "yyy: ~v\n" yyy)
+  ;; (printf "sss: ~v\n" sss)
+
   ;; A graph with all the directions flipped
   (define/contract graph graph? (transpose orig-graph))
   (define-vertex-property graph sum-total #:init 0)
 
-  (define num-cons-list (hash->list num-cons))
-  (define sorted-num-cons-list (sort num-cons-list > #:key cdr))
-  (define/contract just-nodes-sorted
-    (listof string?)
-    (racket-map car sorted-num-cons-list))
+  (define just-nodes-sorted (tsort graph))
+
+  (printf "just-nodes-sortted: ~v\n" just-nodes-sorted)
 
   ;; node is a string and it is the current node we are operating on
   (for ([node just-nodes-sorted])
@@ -246,25 +260,26 @@
 
 (define (main)
   (let* (
-         [in (open-input-file "day07-input")]
-         ;; [in (open-input-file "day07-input-example")]
+         ;; [in (open-input-file "day07-input")]
+         [in (open-input-file "day07-input-example")]
          ;; [in (open-input-file "day07-input-example2")]
          ;; [in (open-input-file "day07-input-example3")]
          [input-str (port->string in #:close? #t)]
          [input-lines (parse-result! (parse-string all-input/p input-str))]
          [graph (build-graph input-lines)]
-         [graph-stuff-dijkstra (do-dijkstra graph "shiny gold")]
-         [graph-stuff-bfs (do-my-bfs graph "shiny gold")]
-         [how-many (how-many-can-contain graph "shiny gold")]
+         [color "muted yellow"]
+         [graph-stuff-dijkstra (do-dijkstra graph color)]
+         [graph-stuff-bfs (do-my-bfs graph color)]
+         [how-many (how-many-can-contain graph color)]
          ;; [group-sum (for/sum ((g group-amount)) g)]
          ;; [seat-ids (map get-seat-id split-input)]
          ;; [max-seat-id (argmax identity seat-ids)]
          ;; [missing-seat-ids (get-missing-seat-ids seat-ids max-seat-id)]
          )
     ;; (printf "input-str: ~v\n" input-str)
-    (printf "input-lines: ~v\n" input-lines)
-    (printf "graph-stuff-dijkstra: ~v\n" graph-stuff-dijkstra)
-    (printf "graph-stuff-bfs: ~v\n" graph-stuff-bfs)
+    ;; (printf "input-lines: ~v\n" input-lines)
+    ;; (printf "graph-stuff-dijkstra: ~v\n" graph-stuff-dijkstra)
+    ;; (printf "graph-stuff-bfs: ~v\n" graph-stuff-bfs)
     (printf "how-many: ~v\n" how-many)
     (call-with-output-file "day07-graph.dot" #:exists 'replace
       (λ (out-file) (graphviz graph #:output out-file)))
