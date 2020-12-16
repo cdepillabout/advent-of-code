@@ -253,8 +253,8 @@
 
 (define (main)
   (let* (
-         [in (open-input-file "day07-input")]
-         ;; [in (open-input-file "day07-input-example")]
+         ;; [in (open-input-file "day07-input")]
+         [in (open-input-file "day07-input-example")]
          ;; [in (open-input-file "day07-input-example2")]
          ;; [in (open-input-file "day07-input-example3")]
          [input-str (port->string in #:close? #t)]
