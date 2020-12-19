@@ -34,10 +34,8 @@
 (define (op-and-expr/p)
   ;; (parser/c char? (op-and-expr/c))
   (monad/do
-   ;; space/p
    (string/p " ")
    [op <- op/p]
-   ;; space/p
    (string/p " ")
    [expr <- (expr/p)]
    (pure (list op expr))))
@@ -136,7 +134,6 @@
          [(char=? first-op #\+)
           (solve-num-and-next (+ num solved-first-expr) remaining)]
          [(char=? first-op #\*)
-          ;; (solve-num-and-next (* num solved-first-expr) remaining)]
           (* num (solve-num-and-next solved-first-expr remaining))]
          ))]))
 
