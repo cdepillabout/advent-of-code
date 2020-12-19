@@ -31,55 +31,56 @@
   (check-equal? (parse-string op/p "*") (success #\*))
   )
 
-(define (op-and-expr/p)
+(define op-and-expr/p
   ;; (parser/c char? (op-and-expr/c))
-  (monad/do
-   (string/p " ")
-   [op <- op/p]
-   (string/p " ")
-   [expr <- (expr/p)]
-   (pure (list op expr))))
+  (lazy/p
+   (monad/do
+    (string/p " ")
+    [op <- op/p]
+    (string/p " ")
+    [expr <- expr/p]
+    (pure (list op expr)))))
 
-(define (expr/p)
+(define expr/p
   ;; (parser/c char? (expr/c))
-  (or/p integer/p
-        (monad/do
-         [char/p #\(]
-         [expr <- (expr-list/p)]
-         [char/p #\)]
-         (pure expr)
-         )))
+  (lazy/p
+   (or/p integer/p
+         (monad/do
+          [char/p #\(]
+          [expr <- expr-list/p]
+          [char/p #\)]
+          (pure expr)
+          ))))
 
 (module+ test
-  (check-equal? (parse-string (expr/p) "7") (success 7))
-  (check-equal? (parse-string (expr/p) "0") (success 0))
-  (check-equal? (parse-string (expr/p) "(0)") (success '(0 ())))
-  (check-equal? (parse-string (expr/p) "(0)\n") (success '(0 ())))
-  (check-equal? (parse-string (expr/p) "(0 + 3)") (success '(0 ((#\+ 3)))))
+  (check-equal? (parse-string expr/p "7") (success 7))
+  (check-equal? (parse-string expr/p "0") (success 0))
+  (check-equal? (parse-string expr/p "(0)") (success '(0 ())))
+  (check-equal? (parse-string expr/p "(0)\n") (success '(0 ())))
+  (check-equal? (parse-string expr/p "(0 + 3)") (success '(0 ((#\+ 3)))))
   )
 
-(define (expr-list/p)
+(define expr-list/p
   ;; (parser/c char? (expr-list/c))
-  (monad/do
-   [first-expr <- (expr/p)]
-   [op-and-exprs <- (many/p (op-and-expr/p))]
-   [pure (list first-expr op-and-exprs)]
-   )
-  )
+  (lazy/p
+   (monad/do
+    [first-expr <- expr/p]
+    [op-and-exprs <- (many/p op-and-expr/p)]
+    [pure (list first-expr op-and-exprs)])))
 
 (module+ test
   (check-equal?
-   (parse-string (expr-list/p) "1 + 2 * 3 + 4 * 5 + 6")
+   (parse-string expr-list/p "1 + 2 * 3 + 4 * 5 + 6")
    (success '(1 ((#\+ 2) (#\* 3) (#\+ 4) (#\* 5) (#\+ 6)))))
   (check-equal?
-   (parse-string (expr-list/p) "1 + 2 * 3 + 4 * 5 + 6\n")
+   (parse-string expr-list/p "1 + 2 * 3 + 4 * 5 + 6\n")
    (success '(1 ((#\+ 2) (#\* 3) (#\+ 4) (#\* 5) (#\+ 6)))))
   (check-equal?
-   (parse-string (expr-list/p) "1 + (2 * 3) + (4 * (5 + 6))")
+   (parse-string expr-list/p "1 + (2 * 3) + (4 * (5 + 6))")
    (success '(1 ((#\+ (2 ((#\* 3)))) (#\+ (4 ((#\* (5 ((#\+ 6))))))))))
    )
   (check-equal?
-   (parse-string (expr-list/p) "9 + (8 * (8 + 7 * 4)) * 6 + 5 + 4 * 9")
+   (parse-string expr-list/p "9 + (8 * (8 + 7 * 4)) * 6 + 5 + 4 * 9")
    (success
     '(9 ((#\+ (8 ((#\* (8 ((#\+ 7) (#\* 4)))))))
          (#\* 6)
@@ -92,7 +93,7 @@
 
 (define parse-all/p
   ;; (parser/c char? (listof (expr-list/c)))
-  (many+/p (expr-list/p) #:sep (string/p "\n"))
+  (many+/p expr-list/p #:sep (string/p "\n"))
   )
 
 (module+ test
@@ -149,7 +150,7 @@
 
 (define/contract (solve-line str)
   (-> string? number?)
-  (let* ([parsed (parse-result! (parse-string (expr-list/p) str))]
+  (let* ([parsed (parse-result! (parse-string expr-list/p str))]
          [solved (solve-parsed parsed)]
          )
     solved))
