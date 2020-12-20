@@ -9,15 +9,16 @@
   (require rackunit)
   )
 
-(define (is-op? c) (or/c (char=? c #\+) (char=? c #\*)))
+(define (is-op? c) (or (char=? c #\+) (char=? c #\*)))
 
-(define (op-and-expr/c) (list/c is-op? (expr/c)))
+(define expr/c (or/c integer? (recursive-contract expr-list/c #:chaperone)))
 
-(define (expr-list/c) (list/c (expr/c) (listof (op-and-expr/c))))
+(define expr-list/c
+  (list/c expr/c
+          (listof (recursive-contract op-and-expr/c #:chaperone))))
 
-;; (define (expr/c) (or/c integer? (expr-list/c)))
-(define (expr/c) (or/c integer?))
-
+(define op-and-expr/c
+  (list/c is-op? expr/c))
 
 ;;;;;;;;;;;;;
 ;; Parsing ;;
@@ -31,8 +32,8 @@
   (check-equal? (parse-string op/p "*") (success #\*))
   )
 
-(define op-and-expr/p
-  ;; (parser/c char? (op-and-expr/c))
+(define/contract op-and-expr/p
+  (parser/c char? op-and-expr/c)
   (lazy/p
    (monad/do
     (string/p " ")
@@ -41,8 +42,8 @@
     [expr <- expr/p]
     (pure (list op expr)))))
 
-(define expr/p
-  ;; (parser/c char? (expr/c))
+(define/contract expr/p
+  (parser/c char? expr/c)
   (lazy/p
    (or/p integer/p
          (monad/do
@@ -60,8 +61,8 @@
   (check-equal? (parse-string expr/p "(0 + 3)") (success '(0 ((#\+ 3)))))
   )
 
-(define expr-list/p
-  ;; (parser/c char? (expr-list/c))
+(define/contract expr-list/p
+  (parser/c char? expr-list/c)
   (lazy/p
    (monad/do
     [first-expr <- expr/p]
@@ -91,8 +92,8 @@
    )
   )
 
-(define parse-all/p
-  ;; (parser/c char? (listof (expr-list/c)))
+(define/contract parse-all/p
+  (parser/c char? (listof expr-list/c))
   (many+/p expr-list/p #:sep (string/p "\n"))
   )
 
@@ -114,14 +115,14 @@
 ;; Solution ;;
 ;;;;;;;;;;;;;;
 
-(define (solve-expr expr)
-  ;; (-> (expr/c) number?)
+(define/contract (solve-expr expr)
+  (-> expr/c number?)
   (cond
     [(number? expr) expr]
     [else (solve-parsed expr)]))
 
-(define (solve-num-and-next num ops-and-exprs)
-  ;; (-> number? (listof (op-and-expr/c)))
+(define/contract (solve-num-and-next num ops-and-exprs)
+  (-> number? (listof op-and-expr/c) number?)
   (cond
     [(null? ops-and-exprs) num]
     [else
@@ -138,8 +139,8 @@
           (* num (solve-num-and-next solved-first-expr remaining))]
          ))]))
 
-(define (solve-parsed parsed)
-  ;; (-> (expr-list/c) number?)
+(define/contract (solve-parsed parsed)
+  (-> expr-list/c number?)
   '()
   (match parsed
     [(list expr next-op-and-exprs)
@@ -180,7 +181,8 @@
   )
 
 
-(define (main)
+(define/contract (main)
+  (-> void?)
   (let* (
          [in (open-input-file "day18-input")]
          [input-str (port->string in #:close? #t)]
