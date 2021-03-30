@@ -109,7 +109,7 @@ executable day10
                     -- , conduit-extra
                     -- , containers
                     , classy-prelude
-                    -- , lens
+                    , lens
                     -- , megaparsec
                     -- , parsec
                     -- , pretty-simple
@@ -122,8 +122,7 @@ executable day10
   --
   -- Add language extensions you want to use here so it doesn't clutter the top
   -- of your Haskell files.
-  default-extensions: AutoDeriveTypeable
-                      BangPatterns
+  default-extensions: BangPatterns
                       BinaryLiterals
                       BlockArguments
                       ConstraintKinds
@@ -155,6 +154,7 @@ executable day10
                       PartialTypeSignatures
                       PatternGuards
                       PolyKinds
+                      QuantifiedConstraints
                       RankNTypes
                       RecordWildCards
                       ScopedTypeVariables
