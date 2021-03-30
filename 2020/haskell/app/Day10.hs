@@ -123,8 +123,7 @@ instance MonadIO (Toogle f b) where
 
 toogleHitchAt
   :: forall b f i
-   . ( TraversableWithIndex i f
-     , Lens.Index (f (Maybe b)) ~ i
+   . ( Lens.Index (f (Maybe b)) ~ i
      , Lens.Index (f (Toogle f b b)) ~ i
      , Lens.IxValue (f (Maybe b)) ~ Maybe b
      , Lens.IxValue (f (Toogle f b b)) ~ Toogle f b b
