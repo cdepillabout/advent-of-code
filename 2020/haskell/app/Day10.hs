@@ -164,10 +164,9 @@ runToogles
      , forall x. Ixed (f x)
      , Show i
      )
-  => (forall x. i -> f x -> x)
-  -> f (Toogle f b b)
+  => f (Toogle f b b)
   -> IO (f b)
-runToogles getter toogles = do
+runToogles toogles = do
   let toogle = itraverse go toogles :: Toogle f b (f b)
       m = unToogle toogle :: f (Toogle f b b) -> f (Maybe b) -> IO (f b, f (Maybe b))
       nothings = fmap (const Nothing) toogles
@@ -181,18 +180,9 @@ runToogles getter toogles = do
 
 example7 :: IO ()
 example7 = do
-  res <- runToogles lookupElem (zipWith ($) [x0, x1, x2, x3, x4, x5, x6] [0..])
+  res <- runToogles (zipWith ($) [x0, x1, x2, x3, x4, x5, x6] [0..])
   print res
   where
-    lookupElem :: Int -> [a] -> a
-    lookupElem i = (!! i)
-
-    -- setElem :: Int -> a -> [a] -> [a]
-    -- setElem i a = set (ix i) a
-
-    -- TODO: Figure out how to abstract lookupElem and setElem
-    -- (possibly with TraversableWithIndex and Ixed?)
-
     x0 :: Int -> Toogle [] String String
     x0 i = do
       liftIO $ putStrLn "Evaluating x0, about to pull out x1"
