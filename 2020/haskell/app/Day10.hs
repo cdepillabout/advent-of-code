@@ -347,3 +347,5 @@ example10 = do
 -- hitchAt would be really fast.
 
 -- What is the relationship between TangleT and MonadFix?
+
+-- Can you do Nixpkgs-style overlays with TangleT?
