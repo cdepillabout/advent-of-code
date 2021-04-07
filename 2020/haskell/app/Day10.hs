@@ -157,8 +157,9 @@ toogleHitchAt i = Toogle go
 runToogles
   :: forall b f i
    . ( TraversableWithIndex i f
-     , Lens.Index (f (Maybe b)) ~ i
-     , Lens.Index (f (Toogle f b b)) ~ i
+     , forall x. Lens.Index (f x) ~ i
+     -- , Lens.Index (f (Maybe b)) ~ i
+     -- , Lens.Index (f (Toogle f b b)) ~ i
      , Lens.IxValue (f (Maybe b)) ~ Maybe b
      , Lens.IxValue (f (Toogle f b b)) ~ Toogle f b b
      , forall x. Ixed (f x)
@@ -227,7 +228,14 @@ example7 = do
       pure $ "X6 (" <> x5Val <> ") VAL"
 
 allPaths'' :: Map Int [Int] -> [Int] -> (Map Int Int, Int)
-allPaths'' lookupTable is = undefined -- runTangle
+allPaths'' lookupTable is =
+  runToogles -- (zipWith ($) toogles [0..])
+  where
+  toogles :: Int -> Toogle (Map Int) Int Int
+  toogles i = do
+    res1 <- toogleHitchAt (i + 1)
+    res2 <- toogleHitchAt (i + 2)
+    res3 <- toogleHitchAt (i + 3)
   -- go mempty (zip is [0..])
   -- where
   -- go :: Map Int Int -> [(Int, Int)] -> (Map Int Int, Int)
@@ -268,3 +276,74 @@ main = do
   print $ onesAndThrees realNums
   print $ potentNext
   print $ allPaths' potentNext realNums
+
+-----------------------------------
+
+
+newtype TangleT b f m a = TangleT
+  { unTangleT
+      :: RWST
+           (f (TangleT b m b))
+           ()
+           (f (Maybe b))
+           -- (f (STRef (Maybe b)))
+           m
+           a
+  }
+
+runTangleT
+  :: f (TangleT b f m b)
+  -> m (f b)
+runTangleT tangles = 
+  let x = itraverse go tangles :: TangleT b f m (f b)
+  where
+    go :: i -> TangleT f b b -> TangleT f b b
+    go i t = hitchAt _
+
+hitchAt
+  :: (forall z. Traversal' (f z) z)
+  -> TangleT b f m (Maybe b)
+hitchAt t = TangleT $ do
+  fMaybeB <- get
+  case fMaybeB ^? t of
+    Nothing -> undefined
+    Just maybeB ->
+      case maybeB of
+        Nothing -> do
+          fTangleT <- ask
+  
+
+example10 :: IO [Int]
+example10 = do
+  runTangleT tangles
+  where
+    tangles :: [TangleT Int [] IO Int]
+    tangles =
+      [ pure 10
+      , do
+          firstElem <- hitchAt (ix 0)
+          thirdElem <- hitchAt 2
+          pure $ firstElem + thirdElem
+      , read <$> getLine
+      , do
+         secondElem <- hitchAt 1
+         pure $ secondElem + 10
+      ]
+
+-- IO [ 10, 20, 30 ]
+
+-- Could you automatically produce a dependency graph?
+-- Have additional state like a Map that shows which nodes
+-- accessed which other nodes?
+
+-- Jonas suggests to have a clear reason why you don't just
+-- use a self-referential data structure.
+-- possible reason: an exotic monad transformer in m, or
+-- dependency tracking.
+
+-- When building a list, it may get very expensive to
+-- do indexing with hitchAt.  So you could instead
+-- keep a Map of index to value in the state, so that
+-- hitchAt would be really fast.
+
+-- What is the relationship between TangleT and MonadFix?
