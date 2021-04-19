@@ -121,26 +121,26 @@ instance MonadIO (Toogle f b) where
     res <- f
     pure (res, nulls)
 
-toogleHitchAt
-  :: forall b f i
-   . ( Lens.Index (f (Maybe b)) ~ i
-     , Lens.Index (f (Toogle f b b)) ~ i
-     , Lens.IxValue (f (Maybe b)) ~ Maybe b
-     , Lens.IxValue (f (Toogle f b b)) ~ Toogle f b b
-     , forall x. Ixed (f x)
-     )
-  => i
-  -> Toogle f b b
-toogleHitchAt i = Toogle go
-  where
-    go :: f (Toogle f b b) -> f (Maybe b) -> IO (b, f (Maybe b))
-    go r nulls =
-      case fromJust $ nulls ^? ix i of
-        Just val -> pure (val, nulls)
-        Nothing -> do
-          let toogFunc = unToogle $ fromJust (r ^? ix i)
-          (b, nulls') <- toogFunc r nulls
-          pure (b, set (ix i) (Just b) nulls')
+-- toogleHitchAt
+--   :: forall b f i
+--    . ( Lens.Index (f (Maybe b)) ~ i
+--      , Lens.Index (f (Toogle f b b)) ~ i
+--      , Lens.IxValue (f (Maybe b)) ~ Maybe b
+--      , Lens.IxValue (f (Toogle f b b)) ~ Toogle f b b
+--      , forall x. Ixed (f x)
+--      )
+--   => i
+--   -> Toogle f b b
+-- toogleHitchAt i = Toogle go
+--   where
+--     go :: f (Toogle f b b) -> f (Maybe b) -> IO (b, f (Maybe b))
+--     go r nulls =
+--       case fromJust $ nulls ^? ix i of
+--         Just val -> pure (val, nulls)
+--         Nothing -> do
+--           let toogFunc = unToogle $ fromJust (r ^? ix i)
+--           (b, nulls') <- toogFunc r nulls
+--           pure (b, set (ix i) (Just b) nulls')
 
 -- toogleHitchAt :: forall b f. (forall g x. Functor g => (x -> g x) -> f x -> g (f x)) -> Toogle f b b
 -- toogleHitchAt fLens = Toogle go
@@ -154,15 +154,57 @@ toogleHitchAt i = Toogle go
 --           (b, nulls') <- toogFunc r nulls
 --           pure (b, set fLens (Just b) nulls')
 
+-- TODO: Write this to just take a Traversal'?
+toogleHitchAt
+  :: forall b f
+   . (forall x. Traversal' (f x) x)
+  -> Toogle f b (Maybe b)
+toogleHitchAt lookupL = Toogle go
+  where
+    go :: f (Toogle f b b) -> f (Maybe b) -> IO (Maybe b, f (Maybe b))
+    go r nulls =
+      case preview lookupL nulls of
+        -- The lookup traversal doesn't actually point to a valid element in
+        -- the nulls data structure.
+        Nothing -> pure (Nothing, nulls)
+        -- The lookup traversal points to an already computed value in the
+        -- nulls data structure.  Just return this.
+        Just (Just val) -> pure (Just val, nulls)
+        -- The lookup traversal points to a valid value in the nulls data
+        -- structure, but it hasn't been computed yet.  Look it up.
+        Just Nothing -> do
+          case preview lookupL r of
+            -- The lookup traversal doesn't actually point to a valid element
+            -- in the r data structure (even though it does in the nulls data
+            -- structure).  This is strange. In runToogle we know that
+            -- nulls has the same length as r, so any traversal that returns
+            -- a value for nulls should also return a value for r.
+            Nothing -> pure (Nothing, nulls)
+            Just toogFunc -> do
+              (b, nulls') <- unToogle toogFunc r nulls
+              pure (Just b, set lookupL (Just b) nulls')
+
+unsafeToogleHitchAt
+  :: forall b f
+   . (forall x. Traversal' (f x) x)
+  -> Toogle f b b
+unsafeToogleHitchAt lookupL = fmap fromJust $ toogleHitchAt lookupL
+
+-- runToogles
+--   :: forall b f i
+--    . ( TraversableWithIndex i f
+--      , Lens.Index (f x) ~ i
+--      , Lens.IxValue (f (Maybe b)) ~ Maybe b
+--      , Lens.IxValue (f (Toogle f b b)) ~ Toogle f b b
+--      , forall x. Ixed (f x)
+--      , Show i
+--      )
+--   => f (Toogle f b b)
+--   -> IO (f b)
 runToogles
   :: forall b f i
    . ( TraversableWithIndex i f
-     , forall x. Lens.Index (f x) ~ i
-     -- , Lens.Index (f (Maybe b)) ~ i
-     -- , Lens.Index (f (Toogle f b b)) ~ i
-     , Lens.IxValue (f (Maybe b)) ~ Maybe b
-     , Lens.IxValue (f (Toogle f b b)) ~ Toogle f b b
-     , forall x. Ixed (f x)
+     , TraversableIndexed i f
      , Show i
      )
   => f (Toogle f b b)
@@ -177,7 +219,32 @@ runToogles toogles = do
     go :: i -> Toogle f b b -> Toogle f b b
     go i (Toogle _inner) = do
       putStrLn $ "In runToogles, go, on index i: " <> tshow i
-      toogleHitchAt i
+      -- We know that all our indexes are valid, because it is implied by
+      -- itraverse.
+      unsafeToogleHitchAt (travIx i)
+
+-- type family Index (s :: *) :: *
+-- type instance Index [a] = Int
+
+-- type family IxValue (m :: *) :: *
+-- type instance IxValue [a] = a
+
+-- class Ixed m where
+--   ix :: Index m -> Traversal' m (IxValue m)
+
+class TraversableIndexed i t | t -> i where
+  travIx :: forall x. i -> Traversal' (t x) x
+
+instance TraversableIndexed Int [] where
+  travIx :: forall x. Int -> Traversal' [x] x
+  travIx i = ix i
+
+-- TODO: Is there some way to generate TraversableIndexed directly from
+-- TraversableWithIndex?
+
+-- TODO: Is there some way to just use the Index class for this (the
+-- profunctor-encoding)?
+-- https://pursuit.purescript.org/packages/purescript-profunctor-lenses/7.0.0/docs/Data.Lens.Index
 
 example7 :: IO ()
 example7 = do
@@ -185,16 +252,16 @@ example7 = do
   print res
   where
     x0 :: Int -> Toogle [] String String
-    x0 i = do
+    x0 _i = do
       liftIO $ putStrLn "Evaluating x0, about to pull out x1"
-      x1Val <- toogleHitchAt 1
+      x1Val <- unsafeToogleHitchAt (ix 1)
       liftIO $ putStrLn "Evaluating x0, finished pulling out x0"
       pure $ "x0 val " <> x1Val
 
     x1 :: Int -> Toogle [] String String
-    x1 i = do
+    x1 _i = do
       liftIO $ putStrLn "Evaluating x1, about to pull out x3"
-      x3Val <- toogleHitchAt 3
+      x3Val <- unsafeToogleHitchAt (ix 3)
       liftIO $ putStrLn "Evaluating x1, finished pulling out x3"
       pure $ "X1 (" <> x3Val <> ") VAL"
 
@@ -216,26 +283,27 @@ example7 = do
     x5 :: Int -> Toogle [] String String
     x5 _i = do
       liftIO $ putStrLn "Evaluating x5, about to pull out x3"
-      x3Val <- toogleHitchAt 3
+      x3Val <- unsafeToogleHitchAt (ix 3)
       liftIO $ putStrLn "Evaluating x5, finished pulling out x3"
       pure $ "X5 (" <> x3Val <> ") VAL"
 
     x6 :: Int -> Toogle [] String String
     x6 _i = do
       liftIO $ putStrLn "Evaluating x6, about to pull out x5"
-      x5Val <- toogleHitchAt 5
+      x5Val <- unsafeToogleHitchAt (ix 5)
       liftIO $ putStrLn "Evaluating x6, finished pulling out x5"
       pure $ "X6 (" <> x5Val <> ") VAL"
 
-allPaths'' :: Map Int [Int] -> [Int] -> (Map Int Int, Int)
-allPaths'' lookupTable is =
-  runToogles -- (zipWith ($) toogles [0..])
-  where
-  toogles :: Int -> Toogle (Map Int) Int Int
-  toogles i = do
-    res1 <- toogleHitchAt (i + 1)
-    res2 <- toogleHitchAt (i + 2)
-    res3 <- toogleHitchAt (i + 3)
+-- allPaths'' :: Map Int [Int] -> [Int] -> (Map Int Int, Int)
+-- allPaths'' lookupTable is =
+--   runToogles -- (zipWith ($) toogles [0..])
+--   where
+--   toogles :: Int -> Toogle (Map Int) Int Int
+--   toogles i = do
+--     res1 <- toogleHitchAt (i + 1)
+--     res2 <- toogleHitchAt (i + 2)
+--     res3 <- toogleHitchAt (i + 3)
+
   -- go mempty (zip is [0..])
   -- where
   -- go :: Map Int Int -> [(Int, Int)] -> (Map Int Int, Int)
@@ -280,55 +348,55 @@ main = do
 -----------------------------------
 
 
-newtype TangleT b f m a = TangleT
-  { unTangleT
-      :: RWST
-           (f (TangleT b m b))
-           ()
-           (f (Maybe b))
-           -- (f (STRef (Maybe b)))
-           m
-           a
-  }
+-- newtype TangleT b f m a = TangleT
+--   { unTangleT
+--       :: RWST
+--            (f (TangleT b m b))
+--            ()
+--            (f (Maybe b))
+--            -- (f (STRef (Maybe b)))
+--            m
+--            a
+--   }
 
-runTangleT
-  :: f (TangleT b f m b)
-  -> m (f b)
-runTangleT tangles = 
-  let x = itraverse go tangles :: TangleT b f m (f b)
-  where
-    go :: i -> TangleT f b b -> TangleT f b b
-    go i t = hitchAt _
+-- runTangleT
+--   :: f (TangleT b f m b)
+--   -> m (f b)
+-- runTangleT tangles = 
+--   let x = itraverse go tangles :: TangleT b f m (f b)
+--   where
+--     go :: i -> TangleT f b b -> TangleT f b b
+--     go i t = hitchAt _
 
-hitchAt
-  :: (forall z. Traversal' (f z) z)
-  -> TangleT b f m (Maybe b)
-hitchAt t = TangleT $ do
-  fMaybeB <- get
-  case fMaybeB ^? t of
-    Nothing -> undefined
-    Just maybeB ->
-      case maybeB of
-        Nothing -> do
-          fTangleT <- ask
+-- hitchAt
+--   :: (forall z. Traversal' (f z) z)
+--   -> TangleT b f m (Maybe b)
+-- hitchAt t = TangleT $ do
+--   fMaybeB <- get
+--   case fMaybeB ^? t of
+--     Nothing -> undefined
+--     Just maybeB ->
+--       case maybeB of
+--         Nothing -> do
+--           fTangleT <- ask
   
 
-example10 :: IO [Int]
-example10 = do
-  runTangleT tangles
-  where
-    tangles :: [TangleT Int [] IO Int]
-    tangles =
-      [ pure 10
-      , do
-          firstElem <- hitchAt (ix 0)
-          thirdElem <- hitchAt 2
-          pure $ firstElem + thirdElem
-      , read <$> getLine
-      , do
-         secondElem <- hitchAt 1
-         pure $ secondElem + 10
-      ]
+-- example10 :: IO [Int]
+-- example10 = do
+--   runTangleT tangles
+--   where
+--     tangles :: [TangleT Int [] IO Int]
+--     tangles =
+--       [ pure 10
+--       , do
+--           firstElem <- hitchAt (ix 0)
+--           thirdElem <- hitchAt 2
+--           pure $ firstElem + thirdElem
+--       , read <$> getLine
+--       , do
+--          secondElem <- hitchAt 1
+--          pure $ secondElem + 10
+--       ]
 
 -- IO [ 10, 20, 30 ]
 
