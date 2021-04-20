@@ -1,3 +1,4 @@
+{-# LANGUAGE UndecidableInstances #-}
 
 module Main where
 
@@ -246,6 +247,10 @@ instance TraversableIndexed Int [] where
 instance Ord k => TraversableIndexed k (Map k) where
   travIx :: forall v. k -> Traversal' (Map k v) v
   travIx k = ix k
+
+-- instance Ixed (t i) => TraversableIndexed i t where
+--   travIx :: forall x. i -> Traversal' (t x) x
+--   travIx = ix
 
 example7 :: IO ()
 example7 = do
