@@ -56,7 +56,7 @@ allPaths :: Map Int [Int] -> [Int] -> Int
 allPaths lookupTable is = go (zip is [0..])
   where
   go :: [(Int, Int)] -> Int
-  go ((m, mIndex) : (n, nIndex) : (o, oIndex) : (p, pIndex) : rest) =
+  go ((m, _mIndex) : (n, nIndex) : (o, oIndex) : (p, pIndex) : rest) =
     let mNexts = {- trace ("allPaths, m: " <> show m) $ -} fromJust $ lookup m lookupTable
         oneNum = go ((n, nIndex) : (o, oIndex) : (p, pIndex) : rest)
         twoNum = go ((o, oIndex) : (p, pIndex) : rest)
@@ -70,14 +70,16 @@ allPaths lookupTable is = go (zip is [0..])
       [2] -> twoNum
       [2,3] -> twoNum + threeNum
       [3] -> threeNum
-  go ((m, mIndex) : (n, nIndex) : [(o, oIndex)]) = 1
-  go ((n, nIndex) : [(o, oIndex)]) = 1
+      _ -> error "this should never happen"
+  go ((_m, _mIndex) : (_n, _nIndex) : [(_o, _oIndex)]) = 1
+  go ((_n, _nIndex) : [(_o, _oIndex)]) = 1
+  go _ = 1
 
 allPaths' :: Map Int [Int] -> [Int] -> (Map Int Int, Int)
 allPaths' lookupTable is = go mempty (zip is [0..])
   where
   go :: Map Int Int -> [(Int, Int)] -> (Map Int Int, Int)
-  go computedNumPaths ((m, mIndex) : (n, nIndex) : (o, oIndex) : (p, pIndex) : rest) =
+  go computedNumPaths ((m, _mIndex) : (n, nIndex) : (o, oIndex) : (p, pIndex) : rest) =
     case lookup m computedNumPaths of
       Just paths -> (computedNumPaths, paths)
       Nothing ->
@@ -94,12 +96,14 @@ allPaths' lookupTable is = go mempty (zip is [0..])
                 [2] -> twoNum
                 [2,3] -> twoNum + threeNum
                 [3] -> threeNum
+                _ -> error "this should never happen"
         in (insertMap m numPathsFromHere comp''', numPathsFromHere)
-  go computedNumPaths ((m, mIndex) : (n, nIndex) : [(o, oIndex)]) =
+  go computedNumPaths ((m, _mIndex) : (_n, _nIndex) : [(_o, _oIndex)]) =
     (insertMap m 1 computedNumPaths, 1)
-  go computedNumPaths ((n, nIndex) : [(o, oIndex)]) =
+  go computedNumPaths ((n, _nIndex) : [(_o, _oIndex)]) =
     (insertMap n 1 computedNumPaths, 1)
-  go computedNumPaths ([(o, oIndex)]) = (computedNumPaths, 0)
+  go computedNumPaths ([(_o, _oIndex)]) = (computedNumPaths, 0)
+  go _ _ = error "bad bad"
 
 newtype Toogle f b a = Toogle { unToogle :: f (Toogle f b b) -> f (Maybe b) -> IO (a, f (Maybe b)) }
   deriving Functor
@@ -239,12 +243,9 @@ instance TraversableIndexed Int [] where
   travIx :: forall x. Int -> Traversal' [x] x
   travIx i = ix i
 
--- TODO: Is there some way to generate TraversableIndexed directly from
--- TraversableWithIndex?
-
--- TODO: Is there some way to just use the Index class for this (the
--- profunctor-encoding)?
--- https://pursuit.purescript.org/packages/purescript-profunctor-lenses/7.0.0/docs/Data.Lens.Index
+instance Ord k => TraversableIndexed k (Map k) where
+  travIx :: forall v. k -> Traversal' (Map k v) v
+  travIx k = ix k
 
 example7 :: IO ()
 example7 = do
@@ -294,43 +295,35 @@ example7 = do
       liftIO $ putStrLn "Evaluating x6, finished pulling out x5"
       pure $ "X6 (" <> x5Val <> ") VAL"
 
--- allPaths'' :: Map Int [Int] -> [Int] -> (Map Int Int, Int)
--- allPaths'' lookupTable is =
---   runToogles -- (zipWith ($) toogles [0..])
---   where
---   toogles :: Int -> Toogle (Map Int) Int Int
---   toogles i = do
---     res1 <- toogleHitchAt (i + 1)
---     res2 <- toogleHitchAt (i + 2)
---     res3 <- toogleHitchAt (i + 3)
-
-  -- go mempty (zip is [0..])
-  -- where
-  -- go :: Map Int Int -> [(Int, Int)] -> (Map Int Int, Int)
-  -- go computedNumPaths ((m, mIndex) : (n, nIndex) : (o, oIndex) : (p, pIndex) : rest) =
-  --   case lookup m computedNumPaths of
-  --     Just paths -> (computedNumPaths, paths)
-  --     Nothing ->
-  --       let mNexts = {- trace ("allPaths, m: " <> show m) $ -} fromJust $ lookup m lookupTable
-  --           (comp', oneNum) = go computedNumPaths ((n, nIndex) : (o, oIndex) : (p, pIndex) : rest)
-  --           (comp'', twoNum) = go comp' ((o, oIndex) : (p, pIndex) : rest)
-  --           (comp''', threeNum) = go comp'' ((p, pIndex) : rest)
-  --           numPathsFromHere =
-  --             case mNexts of
-  --               [1] -> oneNum
-  --               [1,2] -> oneNum + twoNum
-  --               [1,3] -> oneNum + threeNum
-  --               [1,2,3] -> oneNum + twoNum + threeNum
-  --               [2] -> twoNum
-  --               [2,3] -> twoNum + threeNum
-  --               [3] -> threeNum
-  --       in (insertMap m numPathsFromHere comp''', numPathsFromHere)
-  -- go computedNumPaths ((m, mIndex) : (n, nIndex) : [(o, oIndex)]) =
-  --   (insertMap m 1 computedNumPaths, 1)
-  -- go computedNumPaths ((n, nIndex) : [(o, oIndex)]) =
-  --   (insertMap n 1 computedNumPaths, 1)
-  -- go computedNumPaths ([(o, oIndex)]) = (computedNumPaths, 0)
-
+allPaths'' :: Map Int [Int] -> [Int] -> IO (Map Int Int)
+allPaths'' lookupTable is =
+  let toogMap :: Map Int (Toogle (Map Int) Int Int)
+      toogMap = mapFromList $ zip [0..] $ fmap toogles $ zip [0..] is
+  in
+  runToogles toogMap
+  where
+  toogles :: (Int, Int) -> Toogle (Map Int) Int Int
+  toogles (i,m) = do
+    oneNum <- toogleHitchAt $ ix (i + 1)
+    twoNum <- toogleHitchAt $ ix (i + 2)
+    threeNum <- toogleHitchAt $ ix (i + 3)
+    case (oneNum, twoNum, threeNum) of
+      (Nothing, _, _) -> pure 0
+      (Just _, Nothing, _) -> pure 1
+      (Just _, Just _, Nothing) -> pure 1
+      (Just one, Just two, Just three) -> do
+        let mNexts = fromJust $ lookup m lookupTable
+            numPathsFromHere =
+              case mNexts of
+                [1] -> one
+                [1,2] -> one + two
+                [1,3] -> one + three
+                [1,2,3] -> one + two + three
+                [2] -> two
+                [2,3] -> two + three
+                [3] -> three
+                _ -> error "This should never happen"
+        pure numPathsFromHere
 
 main :: IO ()
 main = do
@@ -341,9 +334,11 @@ main = do
   let realNums = (0 : nums ++ [maximum (impureNonNull nums) + 3])
   let potentNext = calcPotentialNext realNums
   print realNums
-  print $ onesAndThrees realNums
+  -- print $ onesAndThrees realNums
   print $ potentNext
-  print $ allPaths' potentNext realNums
+  -- print $ allPaths' potentNext realNums
+  paths <- allPaths'' potentNext realNums
+  print paths
 
 -----------------------------------
 
@@ -362,7 +357,7 @@ main = do
 -- runTangleT
 --   :: f (TangleT b f m b)
 --   -> m (f b)
--- runTangleT tangles = 
+-- runTangleT tangles =
 --   let x = itraverse go tangles :: TangleT b f m (f b)
 --   where
 --     go :: i -> TangleT f b b -> TangleT f b b
