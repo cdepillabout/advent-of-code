@@ -1,6 +1,6 @@
 module Main where
 
-import Data.List ((!!))
+import Data.List ((!!), nub)
 import ClassyPrelude hiding (maximumBy)
 import Data.Coerce (coerce)
 import Data.Foldable (maximumBy, Foldable)
@@ -14,7 +14,7 @@ import Text.Megaparsec.Char.Lexer
 type Parser = Parsec Void Text
 
 newtype TileId = TileId { unTileId :: Int }
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
 data Tile a = Tile TileId a
   deriving (Eq, Functor, Show)
@@ -30,6 +30,30 @@ newtype SideVal = SideVal Int
 
 data RawTileWithInfo p = RawTileWithInfo (RawTile p) [SideVal]
   deriving (Eq, Show)
+
+data Flipped = NoFlipped | Flipped
+
+data Rotated = NoRotated | Rotated90 | Rotated180 | Rotated270
+
+data Puz = Puz TileId (RawTile Pixel) Flipped Rotated
+
+data Board = Board (Vector (Vector Puz))
+
+-- type MatchingPieces = Map TileId (Map Flipped (Map Rotated (NonEmptyList Puz)))
+
+type AllPieces = Map TileId (RawTile Pixel)
+
+data Side = Rght | Dwn
+
+type Touching = Map (TileId, Flipped, Rotated, Side) TileId
+
+data Position = Top | Bottom | Lft | Rgght
+
+data ValForSide = ValForSide SideVal Position Flipped
+
+type SideValMap = Map TileId [ValForSide]
+
+-- type InverseSidevalMap = Map SideVal [TileId]
 
 -- |
 -- >>> pixelVecToInt [PixHash, PixDot, PixHash, PixDot]
@@ -192,13 +216,30 @@ findTopRow inputTiles = do
   (piece, remainingPieces) <- pickPiece inputTiles
   undefined
 
+sidesFor :: Vector (Vector Pixel) -> [ValForSide]
+-- TODO: writing here
+sidesFor vv = undefined
+
+createSideValMap :: [Tile (RawTile Pixel)] -> SideValMap
+createSideValMap = go mempty
+  where
+  go :: SideValMap -> [Tile (RawTile Pixel)] -> SideValMap
+  go m [] = m
+  go m (Tile id (RawTile vv) : t) = go (insertMap id (sidesFor vv) m) t
 
 solvePuzzle :: [Tile (RawTile Pixel)] -> [[Tile (RawTile Pixel)]]
 solvePuzzle inputTiles@(Tile id r@(RawTile vecVec) : ts) =
-  let inputTilesWithSideVals = fmap (fmap rawTileGetInfo) inputTiles :: [Tile (RawTileWithInfo Pixel)]
-      howManyOnSide = sqrt $ fromIntegral $ length inputTiles :: Float
+  let allPuzId =
+        setFromList $ fmap (\(Tile tileId _) -> tileId) inputTiles :: Set TileId
+      sideValMap = createSideValMap inputTiles
   in
-  traceShow howManyOnSide $ traceShow r $ traceShow (rawTileToSideVals r) undefined
+  traceShow (length allPuzId) $
+  -- traceShow (length (nub (sort allPuzId))) $
+  undefined
+  -- let inputTilesWithSideVals = fmap (fmap rawTileGetInfo) inputTiles :: [Tile (RawTileWithInfo Pixel)]
+  --     howManyOnSide = sqrt $ fromIntegral $ length inputTiles :: Float
+  -- in
+  -- traceShow howManyOnSide $ traceShow r $ traceShow (rawTileToSideVals r) undefined
 
 main :: IO ()
 main = do
