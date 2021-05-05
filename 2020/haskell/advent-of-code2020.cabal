@@ -186,7 +186,7 @@ executable day20
                     -- , text
                     -- , time
                     -- , unordered-containers
-                    -- , vector
+                    , vector
   ghc-options:        -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -Wno-unused-imports -Wno-unused-top-binds -O2
   -- Commonly used language extensions.
   --
