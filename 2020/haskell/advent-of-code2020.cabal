@@ -95,8 +95,78 @@ source-repository head
 --                       ViewPatterns
 --   default-language: Haskell2010
 
-executable day10
-  main-is:          Day10.hs
+-- executable day10
+--   main-is:          Day10.hs
+--   hs-source-dirs:   app
+--   -- Commonly used libraries.
+--   --
+--   -- Add any library dependencies you might need here.
+--   build-depends:      base >=4.11 && <5
+--                     -- , aeson
+--                     -- , attoparsec
+--                     -- , bytestring
+--                     -- , conduit
+--                     -- , conduit-extra
+--                     -- , containers
+--                     , classy-prelude
+--                     , lens
+--                     -- , megaparsec
+--                     -- , parsec
+--                     -- , pretty-simple
+--                     -- , text
+--                     -- , time
+--                     -- , unordered-containers
+--                     -- , vector
+--   ghc-options:        -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns -Wno-unused-imports -Wno-unused-top-binds -O2
+--   -- Commonly used language extensions.
+--   --
+--   -- Add language extensions you want to use here so it doesn't clutter the top
+--   -- of your Haskell files.
+--   default-extensions: BangPatterns
+--                       BinaryLiterals
+--                       BlockArguments
+--                       ConstraintKinds
+--                       DataKinds
+--                       DefaultSignatures
+--                       DeriveDataTypeable
+--                       DeriveFoldable
+--                       DeriveFunctor
+--                       DeriveGeneric
+--                       DeriveTraversable
+--                       DoAndIfThenElse
+--                       EmptyCase
+--                       EmptyDataDecls
+--                       ExistentialQuantification
+--                       ExplicitNamespaces
+--                       FlexibleContexts
+--                       FlexibleInstances
+--                       FunctionalDependencies
+--                       GADTs
+--                       GeneralizedNewtypeDeriving
+--                       InstanceSigs
+--                       KindSignatures
+--                       LambdaCase
+--                       MultiParamTypeClasses
+--                       MultiWayIf
+--                       NamedFieldPuns
+--                       NoImplicitPrelude
+--                       OverloadedStrings
+--                       PartialTypeSignatures
+--                       PatternGuards
+--                       PolyKinds
+--                       QuantifiedConstraints
+--                       RankNTypes
+--                       RecordWildCards
+--                       ScopedTypeVariables
+--                       StandaloneDeriving
+--                       TupleSections
+--                       TypeFamilies
+--                       TypeSynonymInstances
+--                       ViewPatterns
+--   default-language: Haskell2010
+
+executable day20
+  main-is:          Day20.hs
   hs-source-dirs:   app
   -- Commonly used libraries.
   --
@@ -110,7 +180,7 @@ executable day10
                     -- , containers
                     , classy-prelude
                     , lens
-                    -- , megaparsec
+                    , megaparsec
                     -- , parsec
                     -- , pretty-simple
                     -- , text
@@ -182,7 +252,7 @@ test-suite doctests
   --
   -- So when you finish the solution for day 1 and start working on day 2, you
   -- will replace `exe:day01` with `exe:day02`.
-  x-doctest-components: lib exe:day11
+  x-doctest-components: lib exe:day20
   type:                exitcode-stdio-1.0
   main-is:             DocTest.hs
   hs-source-dirs:      test
