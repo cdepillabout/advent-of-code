@@ -218,7 +218,17 @@ findTopRow inputTiles = do
 
 sidesFor :: Vector (Vector Pixel) -> [ValForSide]
 -- TODO: writing here
-sidesFor vv = undefined
+sidesFor vv =
+  [ ValForSide  Top NoFlipped
+  , ValForSide _ Lft NoFlipped
+  , ValForSide _ Rgght NoFlipped
+  , ValForSide _ Bottom NoFlipped
+  ]
+
+sideTopVec :: Vector (Vector a) -> Vector a
+sideTopVec = headEx
+
+sideRightTopToBottomVec :: Vector (Vector a) -> Vector a
 
 createSideValMap :: [Tile (RawTile Pixel)] -> SideValMap
 createSideValMap = go mempty
