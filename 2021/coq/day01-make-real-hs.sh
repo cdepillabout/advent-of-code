@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+#
+# This script takes a Day*Generated.hs as input, and uses it to create a
+# Day*Real.hs file.
+#
+# This is necessary because Coq is not able to add things like extra imports
+# during extraction.  See
+# https://coq.inria.fr/library/Coq.extraction.ExtrHaskellString.html
+# for example.
 
 # Get everything up to the qualified import of Prelude.
 head -n 6 ./Day01Generated.hs > Day01Real.hs

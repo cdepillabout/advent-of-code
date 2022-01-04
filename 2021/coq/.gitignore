@@ -42,3 +42,7 @@ imp*.ml*
 # Makefiles.  It looks like these are auto-generated.
 Makefile.coq
 Makefile.coq.conf
+
+# Haskell files that are generated from Coq extraction.
+Day*Generated.hs
+Day*Real.hs
