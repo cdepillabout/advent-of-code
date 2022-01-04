@@ -11,7 +11,13 @@
           coq-shell = self.stdenv.mkDerivation {
             name = "coq-shell";
             dontUnpack = true;
-            nativeBuildInputs = [ self.coq_8_14 ];
+            nativeBuildInputs =
+              let
+                coqPkgs = self.coqPackages_8_13;
+              in
+              [ coqPkgs.coq
+                coqPkgs.parsec
+              ];
             installPhase = "touch $out";
           };
         };
