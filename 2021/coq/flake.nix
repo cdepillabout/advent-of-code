@@ -17,6 +17,7 @@
               in
               [ coqPkgs.coq
                 coqPkgs.parsec
+                (self.haskellPackages.ghcWithPackages (p: []))
               ];
             installPhase = "touch $out";
           };
