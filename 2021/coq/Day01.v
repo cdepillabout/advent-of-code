@@ -32,6 +32,8 @@ Extraction Language Haskell.
 (***************************)
 Require Import ExtrHaskellBasic.
 
+Require Import Coq.extraction.ExtrHaskellString.
+
 (****************************************)
 (* Use Haskell support for Nat handling *)
 (****************************************)
@@ -42,4 +44,4 @@ Require Import ExtrHaskellBasic.
 (***************************)
 (* Extract to Haskell file *)
 (***************************)
-Extraction "./Day01.hs" parseToken (* helper helper' *).
+Extraction "./Day01Generated.hs" parseToken parse (* helper helper' *).
