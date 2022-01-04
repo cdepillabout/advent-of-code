@@ -5,38 +5,22 @@ From Coq Require Extraction.
 
 Require Import Coq.Arith.PeanoNat.
 
-(************)
-(* helper'' *)
-(************)
-Fixpoint helper' (p m n : nat) : bool :=
-  match m,n with
-  | 0,_ => false
-  | 1,_ => false
-  | _,0 => false
-  | _,1 => false
-  | S m',S n' => (orb ((mult m n) =? p) (helper' p m' n))
-  end.
+Require Import Parsec.Core.
 
-(**********)
-(* helper *)
-(**********)
-Fixpoint helper (p m : nat) : bool :=
-  match m with
-  | 0 => false
-  | S m' => (orb ((mult m m) =? p) (orb (helper' p m' m) (helper p m')))
-  end.
+Print Visibility.
 
-(***********)
-(* isPrime *)
-(***********)
-Definition isPrime (p : nat) : bool :=
-  match p with
-  | 0 => false
-  | 1 => false
-  | S p' => (negb (helper p p'))
-  end.
+Definition istchar (a : ascii) : bool :=
+  isalpha a ||| isdigit a ||| in_string "!#$%&'*+-.^_`|~" a.
 
-(* Compute (isPrime 220). *)
+Definition parseToken : parser string :=
+  string_of_list_ascii <$> many1 (satisfy istchar).
+
+Goal parse parseToken "GET / HTTP/1.1" = inr ("GET", " / HTTP/1.1").
+Proof. reflexivity. Qed.
+
+(*
+Definition parse_input : string -> list nat :=
+*)
 
 (********************************)
 (* Extraction Language: Haskell *)
@@ -51,11 +35,11 @@ Require Import ExtrHaskellBasic.
 (****************************************)
 (* Use Haskell support for Nat handling *)
 (****************************************)
-Require Import ExtrHaskellNatNum.
-Extract Inductive Datatypes.nat => "Prelude.Integer" ["0" "succ"]
-"(\fO fS n -> if n Prelude.== 0 then fO () else fS (n Prelude.- 1))".
+(*Require Import ExtrHaskellNatNum.*)
+(* Extract Inductive Datatypes.nat => "Prelude.Integer" ["0" "succ"]
+"(\fO fS n -> if n Prelude.== 0 then fO () else fS (n Prelude.- 1))". *)
 
 (***************************)
 (* Extract to Haskell file *)
 (***************************)
-Extraction "./Day01.hs" isPrime (* helper helper' *).
+Extraction "./Day01.hs" parseToken (* helper helper' *).
