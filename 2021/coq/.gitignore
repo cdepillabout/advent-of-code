@@ -39,7 +39,11 @@ nra.cache
 # I don't know why, but it looks like these files are produced when compiling.
 imp*.ml*
 
-# Makefiles.  It looks like these are auto-generated.
+# Makefiles
+Makefile
+Makefile.conf
+
+# It looks like these are auto-generated.
 Makefile.coq
 Makefile.coq.conf
 

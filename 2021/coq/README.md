@@ -10,7 +10,7 @@ $ nix develop
 Create the Makefile:
 
 ```console
-$ coq_makefile -f _CoqProject *.v -o Makefile
+$ coq_makefile -f _CoqProject Day*.v -o Makefile
 ```
 
 Build all modules:
@@ -18,3 +18,5 @@ Build all modules:
 ```console
 $ make
 ```
+
+You should now be able to 
