@@ -58,4 +58,4 @@ Extract Inductive Datatypes.nat => "Prelude.Integer" ["0" "succ"]
 (***************************)
 (* Extract to Haskell file *)
 (***************************)
-Extraction "./Day01.hs" isPrime helper helper'.
+Extraction "./Day01.hs" isPrime (* helper helper' *).
