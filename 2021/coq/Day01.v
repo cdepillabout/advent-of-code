@@ -7,6 +7,7 @@ Require Import Coq.Arith.PeanoNat.
 
 Require Import Parsec.Core.
 
+(*
 Print Visibility.
 
 Definition istchar (a : ascii) : bool :=
@@ -17,10 +18,54 @@ Definition parseToken : parser string :=
 
 Goal parse parseToken "GET / HTTP/1.1" = inr ("GET", " / HTTP/1.1").
 Proof. reflexivity. Qed.
-
-(*
-Definition parse_input : string -> list nat :=
 *)
+
+Example parseDecExample : parse parseDec "123" = inr (123%N, "").
+Proof. unfold parse. simpl. reflexivity. Qed.
+
+
+Example parseDecExample2 : parse parseDec "123
+" = inr (123%N, "
+").
+Proof. unfold parse. simpl. reflexivity. Qed.
+
+Example parseLFExample : parse parseLF "
+" = inr ("010"%char, "").
+Proof. unfold parse. simpl. reflexivity. Qed.
+
+
+Definition singleNumParser : parser N :=
+  n <- parseDec ;;
+  parseLF ;;
+  pure n.
+
+Example singleNumParserExample : parse singleNumParser "123
+" = inr (123%N, "").
+Proof. unfold parse. simpl. reflexivity. Qed.
+
+Definition numsParser : parser (list N) := many1 singleNumParser.
+
+Example numsParserExample : parse numsParser "199
+200
+208
+210
+200
+" = inr ([199%N; 200%N; 208%N; 210%N; 200%N], "").
+Proof. unfold parse. simpl. reflexivity. Qed.
+
+Definition parseInput (str : string): option (list N) :=
+  match parse numsParser str with
+  | inr (res, "") => Some res
+  | _ => None
+  end.
+  
+Example parseInputExample : parseInput "199
+200
+208
+210
+200
+" = Some [199%N; 200%N; 208%N; 210%N; 200%N].
+Proof. unfold parseInput. unfold parse. simpl. reflexivity. Qed.
 
 (********************************)
 (* Extraction Language: Haskell *)
@@ -44,4 +89,4 @@ Require Import Coq.extraction.ExtrHaskellString.
 (***************************)
 (* Extract to Haskell file *)
 (***************************)
-Extraction "./Day01Generated.hs" parseToken parse (* helper helper' *).
+Extraction "./Day01Generated.hs" parseInput (* helper helper' *).

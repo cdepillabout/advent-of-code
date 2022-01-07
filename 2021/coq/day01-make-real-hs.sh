@@ -8,25 +8,32 @@
 # https://coq.inria.fr/library/Coq.extraction.ExtrHaskellString.html
 # for example.
 
-# Get everything up to the qualified import of Prelude.
-head -n 6 ./Day01Generated.hs > Day01Real.hs
+# Add required language extensions
+cat << 'EOF' > Day01Real.hs
+{-# LANGUAGE StandaloneDeriving #-}
+EOF
+
+# Get everything up to and including the qualified import of Prelude.
+# from the Coq-generated file.
+head -n 6 ./Day01Generated.hs >> Day01Real.hs
 
 # Add extra headers we need.
-echo "import qualified Data.Bits" >> Day01Real.hs
-echo "import qualified Data.Char" >> Day01Real.hs
+cat << 'EOF' >> Day01Real.hs
+import qualified Data.Bits
+import qualified Data.Char
+EOF
 
 # Add the rest of the generated file.
 tail -n +7 ./Day01Generated.hs >> Day01Real.hs
 
 # Add any additional code required.
 cat << 'EOF' >> Day01Real.hs
-main =
-  Prelude.print
-    ( parse
-        parseToken
-        "GET / HTTP/1.1"
-      :: Prelude.Either
-          (Prelude.Maybe Prelude.String)
-          (Prelude.String, Prelude.String)
-    )
+
+deriving instance Prelude.Show N
+deriving instance Prelude.Show Positive
+
+main = do
+  -- let inputStr ="199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
+  let inputStr ="199\n"
+  Prelude.print (parseInput inputStr)
 EOF
