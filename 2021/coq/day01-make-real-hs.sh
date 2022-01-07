@@ -33,7 +33,6 @@ deriving instance Prelude.Show N
 deriving instance Prelude.Show Positive
 
 main = do
-  -- let inputStr ="199\n200\n208\n210\n200\n207\n240\n269\n260\n263"
-  let inputStr ="199\n"
+  let inputStr ="199\n200\n208\n210\n200\n207\n240\n269\n260\n263\n"
   Prelude.print (parseInput inputStr)
 EOF
