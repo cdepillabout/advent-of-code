@@ -141,7 +141,29 @@ Proof.
 
 Existing Instance Functor_option.
 
-Definition solve (s : string): option N := count_increases <$> parseInput s.
+Definition solve_part_1 (s : string): option N := count_increases <$> parseInput s.
+
+Fixpoint group_3 (l : list N) : list N := 
+  match l with
+  | h1 :: t1 =>
+      match t1 with
+      | h2 :: t2 => 
+          match t2 with
+          | h3 :: t3 => h1 + h2 + h3 :: group_3 t1
+          | [] => []
+          end
+      | [] => []
+      end
+  | [] => []
+  end.
+  
+Definition count_increases_in_groups (l : list N) : N := count_increases (group_3 l).
+  
+Example count_increases_in_groups_example :
+  count_increases_in_groups [199%N; 200%N; 208%N; 210%N; 200%N; 207%N; 240%N; 269%N; 260%N; 263%N] = 5.
+Proof. reflexivity. Qed.
+
+Definition solve_part_2 (s : string): option N := count_increases_in_groups <$> parseInput s.
 
 (********************************)
 (* Extraction Language: Haskell *)
@@ -165,4 +187,4 @@ Require Import Coq.extraction.ExtrHaskellString.
 (***************************)
 (* Extract to Haskell file *)
 (***************************)
-Extraction "./Day01Generated.hs" parseInput n_to_string solve (* helper helper' *).
+Extraction "./Day01Generated.hs" parseInput n_to_string solve_part_1 solve_part_2 (* helper helper' *).
