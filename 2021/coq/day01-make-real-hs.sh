@@ -35,6 +35,7 @@ instance Prelude.Show N where
   show = n_to_string
 
 main = do
-  let inputStr ="199\n200\n208\n210\n200\n207\n240\n269\n260\n263\n"
-  Prelude.print (parseInput inputStr)
+  -- let inputStr ="199\n200\n208\n210\n200\n207\n240\n269\n260\n263\n"
+  inputStr <- Prelude.readFile "input-day01"
+  Prelude.print (solve inputStr)
 EOF
