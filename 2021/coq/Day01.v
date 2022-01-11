@@ -157,6 +157,12 @@ Fixpoint group_3 (l : list N) : list N :=
   | [] => []
   end.
   
+Theorem group_3_is_three :
+  forall x y z rest, group_3 (x :: y :: z :: rest) = (x + y + z) :: group_3 (y :: z :: rest).
+Proof.
+  intros. simpl. reflexivity.
+Qed.
+  
 Definition count_increases_in_groups (l : list N) : N := count_increases (group_3 l).
   
 Example count_increases_in_groups_example :
