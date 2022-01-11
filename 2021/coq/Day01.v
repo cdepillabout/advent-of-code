@@ -4,6 +4,7 @@
 From Coq Require Extraction.
 
 Require Import Coq.Arith.PeanoNat.
+Require Import Coq.Numbers.DecimalString.
 
 Require Import Parsec.Core.
 
@@ -67,6 +68,15 @@ Example parseInputExample : parseInput "199
 " = Some [199%N; 200%N; 208%N; 210%N; 200%N].
 Proof. unfold parseInput. unfold parse. simpl. reflexivity. Qed.
 
+Print N.
+
+Print positive.
+
+Compute (xI xH).
+
+Definition n_to_string (n : N): string := NilEmpty.string_of_uint (N.to_uint n).
+
+Compute (n_to_string 100).
 (********************************)
 (* Extraction Language: Haskell *)
 (********************************)
@@ -89,4 +99,4 @@ Require Import Coq.extraction.ExtrHaskellString.
 (***************************)
 (* Extract to Haskell file *)
 (***************************)
-Extraction "./Day01Generated.hs" parseInput (* helper helper' *).
+Extraction "./Day01Generated.hs" parseInput n_to_string (* helper helper' *).

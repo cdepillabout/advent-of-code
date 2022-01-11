@@ -29,8 +29,10 @@ tail -n +7 ./Day01Generated.hs >> Day01Real.hs
 # Add any additional code required.
 cat << 'EOF' >> Day01Real.hs
 
-deriving instance Prelude.Show N
-deriving instance Prelude.Show Positive
+-- instance Prelude.Show Positive
+
+instance Prelude.Show N where
+  show = n_to_string
 
 main = do
   let inputStr ="199\n200\n208\n210\n200\n207\n240\n269\n260\n263\n"
