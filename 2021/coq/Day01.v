@@ -97,6 +97,60 @@ Example count_increases_example :
   count_increases [199%N; 200%N; 208%N; 210%N; 200%N; 207%N; 240%N; 269%N; 260%N; 263%N] = 7.
 Proof. reflexivity. Qed.
 
+Inductive count_increases_relation : (list N) -> N -> Prop :=
+  | Count_Increases_EmptyList : count_increases_relation [] 0
+  | Count_Increases_SingleItem (x : N) : count_increases_relation [x] 0
+  | Count_Increases_LT (x y amt : N) (rest : list N) :
+      x < y ->
+      count_increases_relation (y :: rest) amt ->
+      count_increases_relation (x :: y :: rest) (1 + amt)
+  | Count_Increases_NLT (x y amt : N) (rest : list N) :
+      x >= y ->
+      count_increases_relation (y :: rest) amt ->
+      count_increases_relation (x :: y :: rest) amt
+  .
+  
+Lemma gt_1_implies_lt : forall (x y : N), 1 <= x - y -> y < x.
+Proof.
+  (* unfold N.lt. unfold N.le. unfold not.*) (* unfold N.compare. *)
+  intros x y.
+  destruct (1 ?= x - y) eqn:E.
+  + apply N.compare_eq in E.
+    symmetry in E.
+    assert (1 <> 0).
+    { intros H. discriminate H. }
+    set (G := N.add_sub_eq_nz x y 1 H E).
+    rewrite <- G.
+    intros.
+    apply N.lt_add_pos_r. reflexivity.
+  + intros H.
+    clear E.
+    Check N.le_add_le_sub_r.
+    induction y using N.peano_rect.
+    - simpl in H.
+      unfold N.lt.
+       (* unfold N.le in H.
+    (* rewrite <- (N.le_add_le_sub_r 1 x y) in H. *)
+    set (G :=N.le_add_le_sub_r 1 x y). *)
+    Admitted.
+  
+Theorem count_increases_relation_true :
+  forall l amt, count_increases l = amt <-> count_increases_relation l amt.
+Proof.
+  split.
+  - destruct l as [ | h1 [ | h2 rest ] ].
+    + simpl. intros H. subst amt. constructor.
+    + simpl. intros H. subst amt. constructor.
+    + simpl. 
+      set (G := N.leb_spec0 1%N (h2 - h1)).
+      inversion G.
+      * intros H1.
+        subst amt.
+        apply Count_Increases_LT.
+        symm
+        Admitted.
+    
+
 Theorem count_increases_adds_one_for_increase :
   forall x y rest, x < y -> 1 + count_increases (y :: rest) = count_increases (x :: y :: rest).
 Proof.
