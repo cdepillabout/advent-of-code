@@ -37,6 +37,7 @@ instance Prelude.Show N where
 main = do
   -- let inputStr ="199\n200\n208\n210\n200\n207\n240\n269\n260\n263\n"
   inputStr <- Prelude.readFile "input-day01"
+  -- inputStr <- Prelude.readFile "input-day01-example"
   -- Prelude.print (solve_part_1 inputStr)
   Prelude.print (solve_part_2 inputStr)
 EOF
