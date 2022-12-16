@@ -8,6 +8,7 @@ Require Import Coq.Numbers.DecimalString.
 Require Import Coq.Sorting.Mergesort.
 Require Import Coq.Sorting.Sorting.
 Require Import Coq.Structures.Orders.
+Require Import Coq.micromega.Lia.
 
 Require Import Parsec.Core.
 
@@ -100,6 +101,21 @@ Proof. reflexivity. Qed.
 
 Definition find_most_elf (elves : list (list N)): N :=
   fold_right N.max 0 (map sum_elf elves).
+
+Theorem find_most_elf_finds_max : forall l n, find_most_elf l = n -> In n (map sum_elf l) \/ (l = [] /\ n = 0).
+Proof.
+  intro l. induction l.
+  - cbv. intros. auto.
+  - simpl. unfold find_most_elf in *. simpl in *.
+    intros.
+    destruct (N.max_dec (sum_elf a) (fold_right N.max 0 (map sum_elf l))).
+    * subst. left. left. auto.
+    * assert ((sum_elf a) <= (fold_right N.max 0 (map sum_elf l))) by lia.
+      rewrite H in e. symmetry in e. specialize (IHl n e).
+      inversion IHl.
+      + auto.
+      + inversion H1. left. left. rewrite H3. rewrite H3 in e. clear H1. lia.
+Qed.
 
 Definition solve_part_1 (s : string): option N := find_most_elf <$> parseInput s.
 
