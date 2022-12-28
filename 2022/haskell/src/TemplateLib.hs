@@ -27,6 +27,14 @@ import Language.Haskell.TH.Syntax (Q, Type, addDependentFile)
 import Language.Haskell.TH (appT, promotedConsT, numTyLit, promotedNilT, litT, runIO, Type(PromotedNilT), strTyLit)
 import Data.Foldable (foldrM)
 
+-- | Create type that accurately represents the input file.
+--
+-- Example:
+--
+-- > '[ '[ 1, 2, 3 ], '[100, 200], '[99] ]
+--
+-- Its much easier to write a solution to the problem when you do the parsing
+-- in Haskell.
 createInput :: FilePath -> Q Type
 createInput fp = do
   addDependentFile fp
@@ -49,6 +57,14 @@ group = reverse . go [] []
     go totalAccum thisAccum ("" : rest) = go (reverse thisAccum : totalAccum) [] rest
     go totalAccum thisAccum (h : rest) = go totalAccum (h : thisAccum) rest
 
+-- | Embed the input file directly as a type-level string
+--
+-- Example:
+--
+-- > '[ '[ 1, 2, 3 ], '[100, 200], '[99] ]
+--
+-- Its much hard to write a solution when you have to parse the input file on
+-- the type-level.
 createRawInput :: FilePath -> Q Type
 createRawInput fp = do
   addDependentFile fp

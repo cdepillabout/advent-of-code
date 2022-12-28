@@ -22,12 +22,19 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 
+-- This has been tested with GHC-9.2.4.
+--
+-- I jumped into an environment for compiling this with a command like:
+--
+-- > nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/9fdbe9dd460.tar.gz -p 'haskellPackages.ghcWithPackages (p: with p; [ singletons singletons-th singletons-base template-haskell ])' -p haskellPackages.haskell-language-server -p cabal-install
+--
+
 module Main where
 
 import Data.List.Singletons
 import Data.Singletons.TH
 import GHC.TypeLits.Singletons
-import Prelude.Singletons -- (Map, Sum)
+import Prelude.Singletons
 
 import TemplateLib (createRawInput)
 import GHC.TypeLits (Nat)
@@ -107,3 +114,5 @@ solve = pure ()
 
 main :: IO ()
 main = solve
+
+
