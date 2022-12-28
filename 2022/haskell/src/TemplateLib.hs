@@ -1,10 +1,8 @@
 module TemplateLib where
 
 import Language.Haskell.TH.Syntax (Q, Type, addDependentFile)
-import Language.Haskell.TH (appT, promotedConsT, numTyLit, promotedNilT, litT)
-import Language.Haskell.TH (runIO)
+import Language.Haskell.TH (appT, promotedConsT, numTyLit, promotedNilT, litT, runIO, Type(PromotedNilT), strTyLit)
 import Data.Foldable (foldrM)
-import Language.Haskell.TH (Type(PromotedNilT))
 
 createInput :: FilePath -> Q Type
 createInput fp = do
@@ -12,7 +10,6 @@ createInput fp = do
   rawInput <- runIO $ readFile fp
   let rawInputGroups = group $ lines rawInput
       inputGroups = fmap (fmap (read :: String -> Int)) rawInputGroups
-  runIO $ print inputGroups
   foldrM f PromotedNilT inputGroups
   where
     f :: [Int] -> Type -> Q Type
@@ -28,3 +25,9 @@ group = reverse . go [] []
     go totalAccum thisAccum [] = reverse thisAccum : totalAccum
     go totalAccum thisAccum ("" : rest) = go (reverse thisAccum : totalAccum) [] rest
     go totalAccum thisAccum (h : rest) = go totalAccum (h : thisAccum) rest
+
+createRawInput :: FilePath -> Q Type
+createRawInput fp = do
+  addDependentFile fp
+  rawInput <- runIO $ readFile fp
+  litT $ strTyLit rawInput
