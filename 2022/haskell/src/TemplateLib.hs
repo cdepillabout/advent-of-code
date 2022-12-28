@@ -59,10 +59,6 @@ group = reverse . go [] []
 
 -- | Embed the input file directly as a type-level string
 --
--- Example:
---
--- > '[ '[ 1, 2, 3 ], '[100, 200], '[99] ]
---
 -- Its much hard to write a solution when you have to parse the input file on
 -- the type-level.
 createRawInput :: FilePath -> Q Type
