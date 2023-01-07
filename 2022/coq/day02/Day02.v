@@ -14,80 +14,86 @@ Require Import Parsec.Core.
 
 Require Import ExtLib.Data.Option.
 
-Definition singleNumParser : parser N :=
-  n <- parseDec ;;
-  parseLF ;;
-  pure n.
+Inductive RPS : Type :=
+  | Rock : RPS
+  | Paper : RPS
+  | Scissors : RPS
+  .
 
-Print singleNumParser.
-
-Example singleNumParserExample : parse singleNumParser "123
-" = inr (123%N, "").
-Proof. unfold parse. simpl. reflexivity. Qed.
-
-Definition elfNumsParser : parser (list N) := many1 singleNumParser.
-
-Example elfNumsParserExample : parse elfNumsParser "199
-200
-208
-210
-200
-" = inr ([199%N; 200%N; 208%N; 210%N; 200%N], "").
-Proof. unfold parse. simpl. reflexivity. Qed.
-
-
-
-Definition many_' {T : Type} (acc : list T) (fuel : nat) (p : @parser string T) :
-    @parser string (list T) :=
-  match fuel with
-  | O => pure []
-  | S fuel' => pure []
+Definition rpsParser : parser RPS :=
+  rawChar <- anyToken ;;
+  match rawChar with
+  | "A"%char | "X"%char => pure Rock
+  | "B"%char | "Y"%char => pure Paper
+  | "C"%char | "Z"%char => pure Scissors
+  | _ => raise (Some "Not an RPS.")
   end.
 
-Definition sepBy1 {P} {T} {SEP} (p : parser T)
-    (s : @parser P SEP) : @parser P (list T) :=
-  x <- p ;;
-  xs <- many (s ;; p);;
-  pure (x :: xs). 
+Example rpsParserExample1 : parse rpsParser "A" = inr (Rock, ""). Proof. auto. Qed.
+Example rpsParserExample2 : parse rpsParser "X" = inr (Rock, ""). Proof. auto. Qed.
+Example rpsParserExample3 : parse rpsParser "B" = inr (Paper, ""). Proof. auto. Qed.
+Example rpsParserExample4 : parse rpsParser "Y" = inr (Paper, ""). Proof. auto. Qed.
+Example rpsParserExample5 : parse rpsParser "C" = inr (Scissors, ""). Proof. auto. Qed.
+Example rpsParserExample6 : parse rpsParser "Z" = inr (Scissors, ""). Proof. auto. Qed.
 
-Definition elvesParser : parser (list (list N)) :=
-  sepBy1 elfNumsParser parseLF.
+Definition rpsLineParser : parser (RPS * RPS) :=
+  oppRps <- rpsParser ;;
+  parseSP ;;
+  meRps <- rpsParser ;;
+  parseLF ;;
+  pure (oppRps, meRps).
 
-Example elvesParserExample : parse elvesParser "199
-200
-208
-
-10000
-
-5000
-6000
-" = inr ([[199%N; 200%N; 208%N]; [10000%N]; [5000%N; 6000%N]], "").
+Example rpsLineParserExample : parse rpsLineParser "A Z
+" = inr ((Rock, Scissors), "").
 Proof. auto. Qed.
 
+Definition rpsLinesParser : parser (list (RPS * RPS)) := many1 rpsLineParser.
 
-Definition parseInput (str : string): option (list (list N)) :=
-  match parse elvesParser str with
+Definition parseInput (str : string): option (list (RPS * RPS)) :=
+  match parse rpsLinesParser str with
   | inr (res, "") => Some res
   | _ => None
   end.
-  
-Example parseInputExample : parseInput "1000
-2000
-3000
 
-4000
-
-5000
-6000
-
-7000
-8000
-9000
-
-10000
-" = Some [[1000%N;2000%N;3000%N];[4000%N];[5000%N; 6000%N];[7000%N; 8000%N; 9000%N];[10000%N]].
+Example parseInputExample : parseInput "A Y
+B X
+C Z
+" = Some [(Rock,Paper);(Paper,Rock);(Scissors,Scissors)].
 Proof. auto. Qed.
 
+Local Open Scope N_scope.  
+
+Definition myShapeScore (rps : RPS): N :=
+  match rps with
+  | Rock => 1
+  | Paper => 2
+  | Scissors => 3
+  end.
+
+Definition resultScore (oppRps : RPS) (meRps : RPS): N :=
+  match meRps, oppRps with
+  | Rock, Scissors | Scissors, Paper | Paper, Rock => 6
+  | Rock, Rock | Scissors, Scissors | Paper, Paper => 3
+  | _, _ => 0
+  end.
+
+Definition compute_round_score (p : RPS * RPS): N :=
+  let (oppRps, meRps) := p in
+  myShapeScore meRps + resultScore oppRps meRps.
+
+Definition sumNs (l : list N): N := fold_right Nplus N0 l.
+
+Definition compute_total_score (l : list (RPS * RPS)): N := sumNs (map compute_round_score l).
+
+Definition solve_part_1 (s : string): option N := compute_total_score <$> parseInput s.
+
+Example solve_part_1_example : solve_part_1 "A Y
+B X
+C Z
+" = Some 15.
+Proof. auto. Qed.
+
+(*
 Definition n_to_string (n : N): string :=
   NilEmpty.string_of_uint (N.to_uint n).
 
@@ -143,6 +149,8 @@ Definition sort_elves (elves : list (list N)): list N :=
   sort (map sum_elf elves).
 
 Definition solve_part_2 (s : string): option (list N) := sort_elves <$> parseInput s.
+*)
+
 
 (********************************)
 (* Extraction Language: Haskell *)
@@ -166,4 +174,4 @@ Require Import Coq.extraction.ExtrHaskellString.
 (***************************)
 (* Extract to Haskell file *)
 (***************************)
-Extraction "./Day01Generated.hs" parseInput n_to_string solve_part_1 solve_part_2 (* helper helper' *).
+Extraction "./Day02Generated.hs" parseInput solve_part_1 (* solve_part_2 *).

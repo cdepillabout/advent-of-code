@@ -1,5 +1,5 @@
 
-# Advent of Code 2021 Problems in Coq
+# Advent of Code 2022 Problems in Coq
 
 Get in the dev env:
 
