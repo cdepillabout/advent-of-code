@@ -93,63 +93,46 @@ C Z
 " = Some 15.
 Proof. auto. Qed.
 
-(*
+Definition computeMyRps (oppRps : RPS) (neededResult : RPS): RPS :=
+  match oppRps with
+  | Rock =>
+      match neededResult with
+      | Rock => Scissors (* need to lose *)
+      | Paper => Rock (* need to draw *)
+      | Scissors => Paper (* need to win *)
+      end
+  | Paper =>
+      match neededResult with
+      | Rock => Rock (* need to lose *)
+      | Paper => Paper (* need to draw *)
+      | Scissors => Scissors (* need to win *)
+      end
+  | Scissors =>
+      match neededResult with
+      | Rock => Paper (* need to lose *)
+      | Paper => Scissors (* need to draw *)
+      | Scissors => Rock (* need to win *)
+      end
+  end.
+
+Definition play_round (p : RPS * RPS): N :=
+  let (oppRps, neededResult) := p in
+  let meRps := computeMyRps oppRps neededResult in
+  myShapeScore meRps + resultScore oppRps meRps.
+
+Definition compute_total_score_part_2 (l : list (RPS * RPS)): N := sumNs (map play_round l).
+
+Definition solve_part_2 (s : string): option N := compute_total_score_part_2 <$> parseInput s.
+
+Example solve_part_2_example : solve_part_2 "A Y
+B X
+C Z
+" = Some 12.
+Proof. auto. Qed.
+
+
 Definition n_to_string (n : N): string :=
   NilEmpty.string_of_uint (N.to_uint n).
-
-Local Open Scope N_scope.  
-
-Definition sum_elf (l : list N): N := fold_right Nplus N0 l.
-
-Example count_increases_example :
-  sum_elf [7000%N; 8000%N; 9000%N] = 24000%N.
-Proof. reflexivity. Qed.
-
-Definition find_most_elf (elves : list (list N)): N :=
-  fold_right N.max 0 (map sum_elf elves).
-
-Theorem find_most_elf_finds_max : forall l n, find_most_elf l = n -> In n (map sum_elf l) \/ (l = [] /\ n = 0).
-Proof.
-  intro l. induction l.
-  - cbv. intros. auto.
-  - simpl. unfold find_most_elf in *. simpl in *.
-    intros.
-    destruct (N.max_dec (sum_elf a) (fold_right N.max 0 (map sum_elf l))).
-    * subst. left. left. auto.
-    * assert ((sum_elf a) <= (fold_right N.max 0 (map sum_elf l))) by lia.
-      rewrite H in e. symmetry in e. specialize (IHl n e).
-      inversion IHl.
-      + auto.
-      + inversion H1. left. left. rewrite H3. rewrite H3 in e. clear H1. lia.
-Qed.
-
-Definition solve_part_1 (s : string): option N := find_most_elf <$> parseInput s.
-
-Module NOrder <: TotalLeBool.
-  Definition t := N.
-  Definition leb x y := N.leb x y.
-  Print leb.
-  (* Infix "<=?" := leb (at level 70, no associativity). *)
-  Theorem leb_total : forall a1 a2, leb a1 a2 = true \/ leb a2 a1 = true.
-  Proof.
-    intros a1 a2. 
-    set (G := N.leb_spec a1 a2). 
-    inversion G.
-    - auto.
-    - set (J := N.leb_spec a2 a1).
-      inversion J.
-      * right. auto.
-      * exfalso. set (K := N.lt_asymm a1 a2 H2). auto.
-  Qed.
-End NOrder.
-
-Module Import NSort := Sort NOrder.
-
-Definition sort_elves (elves : list (list N)): list N :=
-  sort (map sum_elf elves).
-
-Definition solve_part_2 (s : string): option (list N) := sort_elves <$> parseInput s.
-*)
 
 
 (********************************)
@@ -174,4 +157,4 @@ Require Import Coq.extraction.ExtrHaskellString.
 (***************************)
 (* Extract to Haskell file *)
 (***************************)
-Extraction "./Day02Generated.hs" parseInput solve_part_1 (* solve_part_2 *).
+Extraction "./Day02Generated.hs" parseInput n_to_string solve_part_1 solve_part_2.

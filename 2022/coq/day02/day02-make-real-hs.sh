@@ -9,25 +9,25 @@
 # for example.
 
 # Add required language extensions
-cat << 'EOF' > Day01Real.hs
+cat << 'EOF' > Day02Real.hs
 {-# LANGUAGE StandaloneDeriving #-}
 EOF
 
 # Get everything up to and including the qualified import of Prelude.
 # from the Coq-generated file.
-head -n 6 ./Day01Generated.hs >> Day01Real.hs
+head -n 6 ./Day02Generated.hs >> Day02Real.hs
 
 # Add extra headers we need.
-cat << 'EOF' >> Day01Real.hs
+cat << 'EOF' >> Day02Real.hs
 import qualified Data.Bits
 import qualified Data.Char
 EOF
 
 # Add the rest of the generated file.
-tail -n +7 ./Day01Generated.hs >> Day01Real.hs
+tail -n +7 ./Day02Generated.hs >> Day02Real.hs
 
 # Add any additional code required.
-cat << 'EOF' >> Day01Real.hs
+cat << 'EOF' >> Day02Real.hs
 
 -- instance Prelude.Show Positive
 
@@ -36,8 +36,8 @@ instance Prelude.Show N where
 
 main = do
   -- let inputStr ="199\n200\n208\n210\n200\n207\n240\n269\n260\n263\n"
-  inputStr <- Prelude.readFile "input-day01"
-  -- inputStr <- Prelude.readFile "input-day01-example"
+  inputStr <- Prelude.readFile "input-day02"
+  -- inputStr <- Prelude.readFile "input-day02-example"
   -- Prelude.print (solve_part_1 inputStr)
   Prelude.print (solve_part_2 inputStr)
 EOF
